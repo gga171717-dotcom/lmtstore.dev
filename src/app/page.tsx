@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
 import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
 
 // ========== CINEMATIC EASING ==========
 const cinematicEase = [0.16, 1, 0.3, 1];
@@ -126,7 +127,7 @@ const withScrollAnimation = (WrappedComponent: React.ComponentType<any>) => {
   };
 };
 
-// ========== MORPHING NAVBAR (centered, shrink on scroll) ==========
+// ========== MORPHING NAVBAR ==========
 const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: string) => void; activePage: string }) => {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
@@ -256,7 +257,7 @@ const HeroSection = () => {
   );
 };
 
-// ========== ABOUT SECTION (4 cards with videos) ==========
+// ========== ABOUT SECTION ==========
 const AboutSection = () => {
   const items = [
     { title: "Steam Accounts", video: "/video/Steam.mp4", desc: "Premium accounts with top games at affordable prices", color: "text-cyan-400" },
@@ -358,7 +359,7 @@ const TechStack = () => {
   );
 };
 
-// ========== TERMS & POLICIES SECTION ==========
+// ========== TERMS & POLICIES ==========
 const TermsSection = () => {
   return (
     <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950">
@@ -379,14 +380,14 @@ const TermsSection = () => {
           <div className="glass-card p-8 rounded-2xl">
             <h3 className="text-2xl font-bold mb-4">Terms of Service</h3>
             <p className="text-gray-300 mb-4">Agreement to Terms</p>
-            <p className="text-gray-400 mb-4">Welcome to Ambani. By accessing our platform, you're entering into a legally binding agreement with us...</p>
-            <p className="text-gray-400">By using Ambani services, if you don't agree with any part of these terms, please do not use our services.</p>
+            <p className="text-gray-400 mb-4">Welcome to Ambani. By accessing our platform, you&apos;re entering into a legally binding agreement with us...</p>
+            <p className="text-gray-400">By using Ambani services, if you don&apos;t agree with any part of these terms, please do not use our services.</p>
           </div>
           <div className="glass-card p-8 rounded-2xl">
-            <h3 className="text-2xl font-bold mb-4">What You Can (and Can't) Do</h3>
+            <h3 className="text-2xl font-bold mb-4">What You Can (and Can&apos;t) Do</h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div><p className="text-cyan-400 font-semibold">You Can</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Use the software for personal use</li><li>Access updates during your license</li><li>Contact support for assistance</li><li>Use on your own machine</li></ul></div>
-              <div><p className="text-red-400 font-semibold">You Can't</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Reverse engineer or decompile</li><li>Resell or transfer your license</li><li>Use for commercial purposes</li><li>Share with anti-cheat developers</li></ul></div>
+              <div><p className="text-red-400 font-semibold">You Can&apos;t</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Reverse engineer or decompile</li><li>Resell or transfer your license</li><li>Use for commercial purposes</li><li>Share with anti-cheat developers</li></ul></div>
             </div>
             <p className="text-gray-500 text-sm mt-4">Ambani is not liable for in-game bans or suspensions. Using our products and services is at your own risk at all times.</p>
           </div>
@@ -404,7 +405,7 @@ const TermsSection = () => {
   );
 };
 
-// ========== PROJECTS SECTION (for home page) ==========
+// ========== PROJECTS SECTION ==========
 const ProjectsSection = () => {
   const projects = [
     { title: "LMTSTORE E‑commerce", desc: "Next.js, Stripe, Tailwind", icon: "🛒", tech: ["Next.js", "Tailwind", "Framer Motion"] },
@@ -443,7 +444,7 @@ const ProjectsSection = () => {
   );
 };
 
-// ========== TERMINAL SECTION (extended hacking logs) ==========
+// ========== TERMINAL SECTION (escaped quotes) ==========
 const TerminalSection = () => {
   const [logs] = useState([
     "$ npm run dev",
@@ -504,7 +505,7 @@ const TerminalSection = () => {
   );
 };
 
-// ========== TESTIMONIALS SECTION (horizontal scroll) ==========
+// ========== TESTIMONIALS SECTION (escaped double quotes) ==========
 const TestimonialsSection = () => {
   const reviews = [
     { name: "A3rian", text: "Silent aim is crazy good. Vehicle spawner saves so much time.", rating: 5, game: "FiveM" },
@@ -534,7 +535,7 @@ const TestimonialsSection = () => {
               <div className="flex text-yellow-400 text-xl mb-3">
                 {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
               </div>
-              <p className="text-gray-300 text-sm mb-4">"{review.text}"</p>
+              <p className="text-gray-300 text-sm mb-4">&quot;{review.text}&quot;</p>
               <div className="flex justify-between items-center">
                 <p className="text-white font-semibold">{review.name}</p>
                 <span className="text-cyan-400 text-xs border border-cyan-400/30 rounded-full px-3 py-1">{review.game}</span>
@@ -578,7 +579,7 @@ const ContactSection = () => (
   </section>
 );
 
-// ========== STORE PAGE: Hero Carousel + Sliders + Product Grid with auto‑rotate 25° ==========
+// ========== STORE PAGE ==========
 const productsImages = [
   "500+.jpg", "anticheat.jpg", "ark.jpg", "forza5.jpg", "godofwar.jpg", "gtav.jpg", "horizon.jpg", "naruto.jpg", "pesfodball.jpg", "Sekiro.jpg", "spider.jpg", "theforest.jpg", "witcher.jpg"
 ];
@@ -629,7 +630,6 @@ const InfiniteSlider = ({ direction = "left", speed = 20 }) => {
   );
 };
 
-// Full product list (21 items) – same as before
 const storeProducts = [
   { id: 1, title: "Steam Account - GTA V", category: "Steam Account", price: 0.01, originalPrice: 59.99, description: "Grand Theft Auto V - Online & Offline. FiveM Ready.", type: "account", gamesCount: 2, level: 25, image: "/images/products/gtav.jpg", discount: 97 },
   { id: 2, title: "Steam Account - FIFA 25", category: "Steam Account", price: 0.02, originalPrice: 69.99, description: "FIFA 25 Ultimate Team, Career Mode, Online Access", type: "account", gamesCount: 1, level: 18, image: "/images/products/fifa.jpg", discount: 97 },
@@ -654,7 +654,6 @@ const storeProducts = [
   { id: 21, title: "FiveM Cheat Ambani", category: "ZIP File", price: 0.03, originalPrice: 29.99, description: "Premium FiveM Cheat Menu - Aimbot, ESP", type: "zip", fileSize: "120 MB", image: "/images/products/ambanicheat.jpg", discount: 80 },
 ];
 
-// Rotating product card wrapper (auto 25° back-and-forth)
 const RotatingProductCard = ({ children }: { children: React.ReactNode }) => {
   const [rotate, setRotate] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -749,7 +748,7 @@ const StorePage = () => {
   );
 };
 
-// ========== COMBINED ABOUT PAGE (Experience + TechStack + Terms) ==========
+// ========== COMBINED PAGES ==========
 const CombinedAboutPage = () => {
   return (
     <>
@@ -761,7 +760,6 @@ const CombinedAboutPage = () => {
   );
 };
 
-// ========== COMBINED WORK PAGE (Testimonials + Terminal) ==========
 const CombinedWorkPage = () => {
   return (
     <>
@@ -771,7 +769,7 @@ const CombinedWorkPage = () => {
   );
 };
 
-// ========== CREATE ANIMATED COMPONENTS (for home page) ==========
+// ========== ANIMATED COMPONENTS (for home page) ==========
 const AnimatedAbout = withScrollAnimation(AboutSection);
 const AnimatedTechStack = withScrollAnimation(TechStack);
 const AnimatedExperience = withScrollAnimation(ExperienceSection);
@@ -793,13 +791,11 @@ const ScrollProgress = () => {
   const { scrollYProgress } = useScroll();
   return <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />;
 };
-import { loadSlim } from "@tsparticles/slim";
 
 const ParticleBackground = () => {
   const particlesInit = async (engine: any) => {
     await loadSlim(engine);
   };
-
   return (
     <Particles
       id="tsparticles"
