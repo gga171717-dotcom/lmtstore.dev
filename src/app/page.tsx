@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import Lenis from "lenis";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
-import Particles from "react-tsparticles";
+import Particles from "@tsparticles/react";
 
 // ========== CINEMATIC EASING ==========
 const cinematicEase = [0.16, 1, 0.3, 1];
@@ -793,23 +793,33 @@ const ScrollProgress = () => {
   const { scrollYProgress } = useScroll();
   return <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />;
 };
-const ParticleBackground = () => (
-  <Particles
-    className="fixed inset-0 -z-10"
-    options={{
-      fpsLimit: 60,
-      particles: {
-        number: { value: 80, density: { enable: true, area: 1000 } },
-        color: { value: ["#00BFFF", "#FF69B4", "#ff0000"] },
-        links: { color: "#ffffff", opacity: 0.05, distance: 200 },
-        move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false },
-        opacity: { value: 0.4 },
-        size: { value: 2 },
-      },
-      interactivity: { events: { onHover: { enable: true, mode: "repulse" } } },
-    }}
-  />
-);
+import { loadSlim } from "@tsparticles/slim";
+
+const ParticleBackground = () => {
+  const particlesInit = async (engine: any) => {
+    await loadSlim(engine);
+  };
+
+  return (
+    <Particles
+      id="tsparticles"
+      init={particlesInit}
+      className="fixed inset-0 -z-10"
+      options={{
+        fpsLimit: 60,
+        particles: {
+          number: { value: 80, density: { enable: true, area: 1000 } },
+          color: { value: ["#00BFFF", "#FF69B4", "#ff0000"] },
+          links: { color: "#ffffff", opacity: 0.05, distance: 200 },
+          move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false },
+          opacity: { value: 0.4 },
+          size: { value: 2 },
+        },
+        interactivity: { events: { onHover: { enable: true, mode: "repulse" } } },
+      }}
+    />
+  );
+};
 
 // ========== MAIN HOME PAGE ==========
 export default function HomePage() {
