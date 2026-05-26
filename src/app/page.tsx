@@ -1,447 +1,854 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Stars } from "@/components/canvas/stars/render.component";
-import { NavBar } from "@/components/navbar.component";
-import { styles } from "./styles";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import Lenis from "lenis";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Command } from "cmdk";
+import Particles from "react-tsparticles";
 
-// ========== PRODUCT DATA WITH IMAGES ==========
-const products = [
-  // STEAM ACCOUNTS WITH IMAGES
-  { id: 1, title: "Steam Account - GTA V", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "Grand Theft Auto V - Online & Offline. FiveM Ready.", type: "account", games: ["GTA V", "GTA Online"], level: 25, steamGuard: "Enabled", image: "/images/products/gtav.jpg" },
-  { id: 2, title: "Steam Account - FIFA 25", category: "Steam Account", price: 1.99, originalPrice: 69.99, description: "FIFA 25 Ultimate Team, Career Mode, Online Access", type: "account", games: ["FIFA 25"], level: 18, steamGuard: "Enabled", image: "/images/products/fifa.jpg" },
-  { id: 3, title: "Steam Account - SpiderMan", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "Marvel's Spider-Man Remastered + Miles Morales", type: "account", games: ["Spider-Man Remastered", "Miles Morales"], level: 12, steamGuard: "Enabled", image: "/images/products/spider.jpg" },
-  { id: 4, title: "Steam Account - RDR2", category: "Steam Account", price: 1.99, originalPrice: 69.99, description: "Red Dead Redemption 2 - Story + Online", type: "account", games: ["RDR2", "RDR Online"], level: 20, steamGuard: "Enabled", image: "/images/products/rdr2.jpg" },
-  { id: 5, title: "Steam Account - God Of War", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "God of War (2018) + Ragnarok", type: "account", games: ["God of War", "Ragnarok"], level: 15, steamGuard: "Enabled", image: "/images/products/godofwar.jpg" },
-  { id: 6, title: "Steam Account - Horizon", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "Horizon Zero Dawn + Forbidden West", type: "account", games: ["Horizon Zero Dawn", "Forbidden West"], level: 14, steamGuard: "Enabled", image: "/images/products/horizon.jpg" },
-  { id: 7, title: "Steam Account - The Forest", category: "Steam Account", price: 1.49, originalPrice: 19.99, description: "The Forest + Sons of The Forest", type: "account", games: ["The Forest", "Sons of The Forest"], level: 10, steamGuard: "Enabled", image: "/images/products/theforest.jpg" },
-  { id: 8, title: "Steam Account - Witcher 3", category: "Steam Account", price: 1.99, originalPrice: 39.99, description: "The Witcher 3: Wild Hunt Complete Edition", type: "account", games: ["Witcher 3", "Hearts of Stone"], level: 22, steamGuard: "Enabled", image: "/images/products/witcher.jpg" },
-  { id: 9, title: "Steam Account - Football 26", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "Football 26 - Ultimate Team, Career Mode", type: "account", games: ["Football 26"], level: 16, steamGuard: "Enabled", image: "/images/products/pesfodball.jpg" },
-  { id: 10, title: "Steam Account - Forza 5", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "Forza Horizon 5 - Premium Edition", type: "account", games: ["Forza Horizon 5"], level: 30, steamGuard: "Enabled", image: "/images/products/forza5.jpg" },
-  { id: 11, title: "Steam Account - Black Myth Wukong", category: "Steam Account", price: 2.99, originalPrice: 59.99, description: "Black Myth: Wukong - Full Game", type: "account", games: ["Black Myth Wukong"], level: 8, steamGuard: "Enabled", image: "/images/products/blackwukong.jpg" },
-  { id: 12, title: "Steam Account - Naruto", category: "Steam Account", price: 1.49, originalPrice: 49.99, description: "Naruto Ultimate Ninja Storm Series", type: "account", games: ["Naruto Storm 1-4"], level: 35, steamGuard: "Enabled", image: "/images/products/naruto.jpg" },
-  { id: 13, title: "Steam Account - ARK", category: "Steam Account", price: 1.99, originalPrice: 49.99, description: "ARK Survival Evolved + All DLCs", type: "account", games: ["ARK SE", "ARK Ascended"], level: 50, steamGuard: "Enabled", image: "/images/products/ark.jpg" },
-  { id: 14, title: "Steam Account - Sekiro", category: "Steam Account", price: 1.99, originalPrice: 59.99, description: "Sekiro: Shadows Die Twice - GOTY", type: "account", games: ["Sekiro"], level: 12, steamGuard: "Enabled", image: "/images/products/sekiro.jpg" },
-  { id: 15, title: "Steam Account - 500+ Games Bundle", category: "Steam Account", price: 9.99, originalPrice: 499.99, description: "Mega Bundle - 500+ Premium Steam Games! Includes GTA V, FIFA, RDR2, God of War, Witcher 3, Forza 5, ARK, Sekiro, Black Myth, Naruto, Football 26 & More!", type: "account", games: ["500+ Games Total", "All AAA Titles"], level: 99, steamGuard: "Enabled", image: "/images/products/500+.jpg" },
-  
-  // ========== ZIP FILES ==========
-  { id: 16, title: "ATR SAMPLE PACK", category: "ZIP File", price: 1.99, originalPrice: 19.99, description: "1000+ Items - Professional Sound Effects", type: "zip", fileSize: "2.5 GB", image: "/images/products/atrsample.jpg" },
-  { id: 17, title: "ATR STUP SUPER", category: "ZIP File", price: 2.99, originalPrice: 29.99, description: "Premium Studio Stup Super Pack", type: "zip", fileSize: "3.2 GB", image: "/images/products/atrstup.jpg" },
-  { id: 18, title: "HSO Sample Recording", category: "ZIP File", price: 1.49, originalPrice: 14.99, description: "HSO Studio Quality Sample Recordings", type: "zip", fileSize: "1.8 GB", image: "/images/products/hso_sample.jpg" },
-  { id: 19, title: "Roblox Menu", category: "ZIP File", price: 0.99, originalPrice: 4.99, description: "Roblox Custom Menu UI - Scripts", type: "zip", fileSize: "50 MB", image: "/images/products/robloxmenu.jpg" },
-  { id: 20, title: "AntiCheat Roblox Server", category: "ZIP File", price: 4.99, originalPrice: 19.99, description: "Advanced Anticheat for Roblox", type: "zip", fileSize: "15 MB", image: "/images/products/anticheat.jpg" },
-  { id: 21, title: "FiveM Cheat Ambani", category: "ZIP File", price: 5.99, originalPrice: 29.99, description: "Premium FiveM Cheat Menu - Aimbot, ESP", type: "zip", fileSize: "120 MB", image: "/images/products/ambanicheat.jpg" }
-];
+// ========== CINEMATIC EASING ==========
+const cinematicEase = [0.16, 1, 0.3, 1];
 
-// 3D Text Component - Single Blue Color for ZIP
-const RotatingText3D = ({ text1, text2, text3, isZip = false }: { text1: string; text2: string; text3?: string; isZip?: boolean }) => {
-  if (isZip) {
-    return (
-      <span style={{ display: "inline-block" }}>
-        <span
-          style={{
-            display: "inline-block",
-            animation: "rotate3dHalf 2.5s ease-in-out",
-            color: "#00BFFF",
-            textShadow: "0 0 10px #00BFFF, 0 0 20px #00BFFF",
-          }}
-        >
-          {text2}
-        </span>
-      </span>
-    );
-  }
-  
-  return (
-    <span style={{ display: "inline-block" }}>
-      <span
-        style={{
-          display: "inline-block",
-          animation: "rotate3dHalf 2.5s ease-in-out",
-          color: "#00BFFF",
-          textShadow: "0 0 10px #00BFFF, 0 0 20px #00BFFF",
-        }}
-      >
-        {text1}{" "}
-      </span>
-      <span
-        style={{
-          display: "inline-block",
-          animation: "rotate3dHalf 2.5s ease-in-out 0.3s",
-          color: "#FF69B4",
-          textShadow: "0 0 10px #FF69B4, 0 0 20px #FF69B4",
-        }}
-      >
-        {text2}
-      </span>
-      {text3 && (
-        <span
-          style={{
-            display: "inline-block",
-            animation: "rotate3dHalf 2.5s ease-in-out 0.6s",
-            color: "#FF69B4",
-            textShadow: "0 0 10px #FF69B4, 0 0 20px #FF69B4",
-          }}
-        >
-          {" "}{text3}
-        </span>
-      )}
-    </span>
-  );
-};
-
-// 3D Title Component for "LMT STORE"
-const AnimatedTitle3D = ({ text1, text2 }: { text1: string; text2: string }) => {
-  return (
-    <div style={{ display: "inline-block", transformStyle: "preserve-3d" }}>
-      <span
-        style={{
-          display: "inline-block",
-          animation: "rotate3dFull 3s ease-in-out infinite",
-          color: "#00BFFF",
-          textShadow: "0 0 15px #00BFFF, 0 0 30px #00BFFF",
-          fontSize: "3rem",
-          fontWeight: "bold",
-        }}
-      >
-        {text1}{" "}
-      </span>
-      <span
-        style={{
-          display: "inline-block",
-          animation: "rotate3dFull 3s ease-in-out 0.5s infinite",
-          color: "#FF69B4",
-          textShadow: "0 0 15px #FF69B4, 0 0 30px #FF69B4",
-          fontSize: "3rem",
-          fontWeight: "bold",
-        }}
-      >
-        {text2}
-      </span>
-    </div>
-  );
-};
-
-// Flashing Color Effect for About Page
-const FlashingText = ({ children }: { children: string }) => {
-  const [colorIndex, setColorIndex] = useState(0);
-  const colors = ['#00BFFF', '#FF69B4', '#FFD700', '#00FF7F', '#FF4500', '#9400D3', '#00CED1'];
-  
+// ========== SMOOTH SCROLL ==========
+function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    const interval = setInterval(() => {
-      setColorIndex((prev) => (prev + 1) % colors.length);
-    }, 300);
-    return () => clearInterval(interval);
+    const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+    return () => lenis.destroy();
   }, []);
-  
-  return (
-    <span style={{ 
-      color: colors[colorIndex],
-      textShadow: `0 0 20px ${colors[colorIndex]}`,
-      transition: "color 0.3s ease",
-      animation: "pulse 0.8s ease-in-out infinite alternate"
-    }}>
-      {children}
-    </span>
-  );
-};
-
-function AnimatedGradientText({ children }: { children: string }) {
-  const [colorIndex, setColorIndex] = useState(0);
-  const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff', '#ff00ff'];
-  useEffect(() => {
-    const interval = setInterval(() => setColorIndex((prev) => (prev + 1) % colors.length), 500);
-    return () => clearInterval(interval);
-  }, []);
-  return <span style={{ color: colors[colorIndex] }}>{children}</span>;
+  return <>{children}</>;
 }
 
-// 3D Rotating Card Component
-const RotatingCard3D = ({ children }: { children: React.ReactNode }) => {
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [direction, setDirection] = useState(1);
-  const [targetRotate, setTargetRotate] = useState(0);
-
+// ========== COMMAND MENU ==========
+const CommandMenu = () => {
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (!isHovered) {
-      const interval = setInterval(() => {
-        setTargetRotate(prev => {
-          let newValue = prev + (direction * 1.5);
-          
-          if (newValue >= 30) {
-            setDirection(-1);
-            return 30;
-          } else if (newValue <= -30) {
-            setDirection(1);
-            return -30;
-          }
-          return newValue;
-        });
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [isHovered, direction]);
-
-  useEffect(() => {
-    if (!isHovered) {
-      setRotateY(targetRotate);
-    }
-  }, [targetRotate, isHovered]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isHovered) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    setRotateY((x - centerX) / 20);
-    setRotateX((centerY - y) / 20);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setRotateX(0);
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((prev) => !prev);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onMouseEnter={handleMouseEnter}
-      style={{
-        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-        transition: isHovered ? "transform 0.2s ease-out" : "transform 0.6s ease-out",
-        transformStyle: "preserve-3d",
-      }}
-    >
-      {children}
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 transition-all duration-500" />
+        <Dialog.Content className="fixed top-[25vh] left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-50 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl focus:outline-none transition-all duration-500">
+          <Command className="rounded-3xl overflow-hidden">
+            <Command.Input
+              className="w-full p-5 bg-transparent text-white text-lg border-b border-white/10 outline-none placeholder:text-gray-500"
+              placeholder="Search projects, tools, or pages..."
+            />
+            <Command.List className="p-3 max-h-96 overflow-y-auto">
+              <Command.Group heading="Pages" className="text-xs text-gray-400 mb-3 tracking-wide">
+                <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">🏠 Home</Command.Item>
+                <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">💼 Work</Command.Item>
+                <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">📞 Contact</Command.Item>
+              </Command.Group>
+              <Command.Group heading="Projects" className="text-xs text-gray-400 mb-3 tracking-wide">
+                <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">✨ LMTSTORE E‑commerce</Command.Item>
+                <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">🎮 FiveM Admin Menu</Command.Item>
+                <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">🖥️ 3D Portfolio</Command.Item>
+              </Command.Group>
+            </Command.List>
+          </Command>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
+
+// ========== CODE RUNNING BACKGROUND ==========
+const CodeBackground = () => {
+  const greenCode = `> initializing system...
+> bypassing firewall...
+> connecting database...
+> access granted...
+> deploying API...
+> websocket connected...
+> scanning ports...
+> loading modules...
+> system ready.
+`.repeat(6);
+  const redCode = `> WARNING: intrusion detected
+> bypassing kernel
+> malware injection
+> backdoor established
+> trojan deployed
+> keylogger active
+> rootkit installed
+`.repeat(6);
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.08] font-mono text-xs leading-5">
+      <div className="absolute top-0 left-0 w-1/2">
+        <pre className="animate-[scrollCode_40s_linear_infinite] text-green-500 whitespace-pre-wrap p-10">{greenCode}</pre>
+      </div>
+      <div className="absolute top-0 right-0 w-1/2">
+        <pre className="animate-[scrollCode_50s_linear_infinite] text-red-500 whitespace-pre-wrap p-10">{redCode}</pre>
+      </div>
     </div>
   );
 };
 
-export default function HomePage() {
-  const [filter, setFilter] = useState<"all" | "account" | "zip">("all");
-  const [search, setSearch] = useState("");
-  const [activePage, setActivePage] = useState<"home" | "about" | "store" | "work" | "contact">("home");
+// ========== HIGHER ORDER COMPONENT ==========
+const withScrollAnimation = (WrappedComponent: React.ComponentType<any>) => {
+  return function AnimatedComponent(props: any) {
+    const [isVisible, setIsVisible] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setIsVisible(true);
+        },
+        { threshold: 0.2 }
+      );
+      if (ref.current) observer.observe(ref.current);
+      return () => observer.disconnect();
+    }, []);
+    return (
+      <motion.div
+        ref={ref}
+        initial={{ opacity: 0, y: 40 }}
+        animate={isVisible ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, ease: cinematicEase }}
+        className="w-full"
+      >
+        <WrappedComponent {...props} />
+      </motion.div>
+    );
+  };
+};
 
-  const filteredProducts = products.filter(p => {
-    const matchesFilter = filter === "all" || (filter === "account" ? p.type === "account" : p.type === "zip");
-    const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase());
-    return matchesFilter && matchesSearch;
+// ========== MORPHING NAVBAR (centered, shrink on scroll) ==========
+const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: string) => void; activePage: string }) => {
+  const { scrollY } = useScroll();
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const unsubscribe = scrollY.on("change", (latest) => setScrolled(latest > 20));
+    return () => unsubscribe();
+  }, [scrollY]);
+
+  const navbarWidth = useTransform(scrollY, [0, 100], ["90%", "auto"]);
+  const navbarPadding = useTransform(scrollY, [0, 100], ["0.75rem 2rem", "0.5rem 1.5rem"]);
+  const navbarBg = useTransform(scrollY, [0, 100], ["rgba(255, 255, 255, 0.02)", "rgba(0, 0, 0, 0.8)"]);
+  const navbarBorder = useTransform(scrollY, [0, 100], ["rgba(255, 255, 255, 0.1)", "rgba(0, 191, 255, 0.5)"]);
+  const navbarRadius = useTransform(scrollY, [0, 100], ["2rem", "3rem"]);
+  const navbarY = useTransform(scrollY, [0, 200], [0, -5]);
+  const navbarShadow = useTransform(scrollY, [0, 100], ["0 0 0 rgba(0,0,0,0)", "0 8px 32px rgba(0,191,255,0.3)"]);
+
+  const handleClick = (page: string) => {
+    setActivePage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const navItems = ["home", "about", "store", "work", "contact"];
+
+  return (
+    <motion.nav
+      style={{
+        width: navbarWidth,
+        padding: navbarPadding,
+        backgroundColor: navbarBg,
+        borderColor: navbarBorder,
+        borderRadius: navbarRadius,
+        y: navbarY,
+        left: "50%",
+        x: "-50%",
+        boxShadow: navbarShadow,
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed top-6 z-50 flex items-center justify-between gap-6 md:gap-8 rounded-full border backdrop-blur-xl"
+    >
+      <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleClick("home")}>
+        <video src="/video/logovdo1.mp4" autoPlay loop muted playsInline className="w-8 h-8 rounded-lg object-cover" />
+        <span className="text-xl font-bold tracking-tight">
+          <span className="text-cyan-400">LMT</span>
+          <span className="text-white">STORE</span>
+        </span>
+      </div>
+      <div className="hidden md:flex items-center gap-6">
+        {navItems.map((item) => (
+          <motion.button
+            key={item}
+            whileHover={{ y: -2, color: "#0ea5e9" }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            onClick={() => handleClick(item)}
+            className={`relative text-sm font-medium transition-colors duration-300 ${
+              activePage === item ? "text-cyan-400" : "text-gray-300 hover:text-cyan-400"
+            }`}
+          >
+            {item.charAt(0).toUpperCase() + item.slice(1)}
+            {activePage === item && (
+              <motion.span
+                layoutId="activeNav"
+                className="absolute -bottom-2 left-0 w-full h-[2px] bg-cyan-400 rounded-full"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
+          </motion.button>
+        ))}
+      </div>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="group relative overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm font-medium backdrop-blur-xl transition-all duration-500 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/20"
+        onClick={() => handleClick("contact")}
+      >
+        Dashboard
+      </motion.button>
+    </motion.nav>
+  );
+};
+
+// ========== HERO SECTION ==========
+const HeroSection = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { scrollYProgress } = useScroll();
+  const yParallax = useTransform(scrollYProgress, [0, 1], [0, -200]);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => setMousePosition({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+      <div
+        className="pointer-events-none fixed inset-0 z-30 transition duration-500"
+        style={{ background: `radial-gradient(800px at ${mousePosition.x}px ${mousePosition.y}px, rgba(0,191,255,0.15), transparent 70%)` }}
+      />
+      <motion.div style={{ y: yParallax }} className="relative z-10 text-center max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: cinematicEase }}>
+          <span className="text-cyan-400 text-sm md:text-base font-mono tracking-wider">✦ WELCOME TO ✦</span>
+        </motion.div>
+        <motion.h1
+          className="text-7xl md:text-8xl lg:text-9xl font-black mt-4 leading-[1.05] tracking-tight"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: cinematicEase }}
+        >
+          <span className="bg-gradient-to-r from-red-500 via-blue-500 to-red-500 bg-clip-text text-transparent animate-[gradient_3s_ease_infinite]">
+            LMTSTORE
+          </span>
+        </motion.h1>
+        <motion.p
+          className="text-gray-300 max-w-2xl mx-auto mt-6 text-lg md:text-xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+        >
+          The premium product and best price
+        </motion.p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} className="mt-10">
+          <button className="group relative overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-10 py-4 text-lg font-semibold backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-cyan-400/40 hover:shadow-2xl hover:shadow-cyan-500/30">
+            Start Dominating →
+          </button>
+        </motion.div>
+      </motion.div>
+    </section>
+  );
+};
+
+// ========== ABOUT SECTION (4 cards with videos) ==========
+const AboutSection = () => {
+  const items = [
+    { title: "Steam Accounts", video: "/video/Steam.mp4", desc: "Premium accounts with top games at affordable prices", color: "text-cyan-400" },
+    { title: "Music Sample Pack", video: "/video/Pack.mp4", desc: "Best Sound packs, Smote pack, Top producer", color: "text-cyan-400" },
+    { title: "Instant Delivery", video: "/video/delivery.mp4", desc: "Get your products immediately after purchase", color: "text-cyan-400" },
+    { title: "Resource Code", video: "/video/code.mp4", desc: "Malware Development, FullStack Dev, Hacking, Cyber Attack, Cheat Engine", color: "text-red-500" },
+  ];
+  return (
+    <section className="py-32 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight">About <span className="text-cyan-400">LMTSTORE</span></h2>
+          <p className="text-gray-400 max-w-2xl mx-auto mt-6 text-lg">Premium digital marketplace for Steam accounts and gaming assets.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {items.map((item, idx) => (
+            <motion.div
+              key={idx}
+              className="glass-card p-6 text-center cursor-pointer"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1, duration: 0.6, ease: cinematicEase }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8, borderColor: "rgba(0,191,255,0.4)" }}
+            >
+              <video src={item.video} autoPlay loop muted playsInline className="w-20 h-20 mx-auto mb-4 rounded-full object-cover" />
+              <h3 className={`text-xl font-bold mb-2 ${item.color}`}>{item.title}</h3>
+              <p className="text-gray-400 text-sm">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ========== EXPERIENCE SECTION ==========
+const ExperienceSection = () => {
+  const experiences = [
+    { year: "2024 - Present", title: "Full Stack Developer", company: "LMTSTORE", desc: "Developing modern web applications with Next.js, Tailwind CSS, and Three.js." },
+    { year: "2024 - 2025", title: "FiveM Script Developer", company: "Freelance", desc: "Created custom admin menus, anti-cheat systems, and game modes for FiveM servers." },
+    { year: "2025 - 2026", title: "UI/UX Designer", company: "Creative Agency", desc: "Designed responsive and interactive user interfaces for e-commerce platforms." },
+    { year: "2026", title: "Coder", company: "Cyber Security", desc: "Hacking, Cyber Attack, Cheat Engine, Malware Development, Backdoor, Trojan, Rootkit" },
+  ];
+  return (
+    <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight">Work <span className="text-cyan-400">Experience</span></h2>
+          <p className="text-gray-400 text-lg mt-4">My journey as a developer</p>
+        </div>
+        <div className="relative border-l-2 border-cyan-400/30 ml-6 md:ml-0">
+          {experiences.map((exp, idx) => (
+            <motion.div
+              key={idx}
+              className="mb-16 ml-8"
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.1, duration: 0.6, ease: cinematicEase }}
+            >
+              <div className="absolute w-4 h-4 bg-cyan-400 rounded-full -left-[9px] mt-2 border-2 border-white" />
+              <div className="glass-card p-8 rounded-2xl">
+                <span className="text-cyan-400 text-sm font-mono">{exp.year}</span>
+                <h3 className="text-2xl font-bold mt-2">{exp.title}</h3>
+                <p className="text-gray-400">{exp.company}</p>
+                <p className="text-gray-500 mt-3">{exp.desc}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ========== TECH STACK ==========
+const TechStack = () => {
+  const techs = ["React", "Next.js", "Node.js", "PostgreSQL", "Docker", "TypeScript", "Tailwind", "Three.js"];
+  return (
+    <section className="py-32 bg-black/40">
+      <div className="max-w-6xl mx-auto px-6 text-center">
+        <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-16">Tech <span className="text-cyan-400">Stack</span></h2>
+        <div className="flex flex-wrap justify-center gap-6">
+          {techs.map((tech, i) => (
+            <motion.div
+              key={tech}
+              className="glass-card px-8 py-4 rounded-full border border-white/10"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.5, ease: cinematicEase }}
+              whileHover={{ y: -6, borderColor: "#0ea5e9", boxShadow: "0 0 20px rgba(0,191,255,0.3)" }}
+            >
+              <span className="text-white font-medium text-lg">{tech}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ========== TERMS & POLICIES SECTION ==========
+const TermsSection = () => {
+  return (
+    <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight">Terms & <span className="text-cyan-400">Policies</span></h2>
+          <p className="text-gray-400 text-lg mt-4">Everything you need to know about using Ambani. Our commitment to transparency, security, and your rights as a valued member of our community.</p>
+          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-gray-400">
+            <span className="bg-white/5 px-4 py-2 rounded-full">2026-02-06</span>
+            <span className="bg-white/5 px-4 py-2 rounded-full">Guaranteed Protection</span>
+            <span className="bg-white/5 px-4 py-2 rounded-full">200+ Users</span>
+            <span className="bg-white/5 px-4 py-2 rounded-full">Terms of Service</span>
+            <span className="bg-white/5 px-4 py-2 rounded-full">Refund Policy</span>
+            <span className="bg-white/5 px-4 py-2 rounded-full">Privacy Policy</span>
+          </div>
+        </div>
+        <div className="space-y-12">
+          <div className="glass-card p-8 rounded-2xl">
+            <h3 className="text-2xl font-bold mb-4">Terms of Service</h3>
+            <p className="text-gray-300 mb-4">Agreement to Terms</p>
+            <p className="text-gray-400 mb-4">Welcome to Ambani. By accessing our platform, you're entering into a legally binding agreement with us...</p>
+            <p className="text-gray-400">By using Ambani services, if you don't agree with any part of these terms, please do not use our services.</p>
+          </div>
+          <div className="glass-card p-8 rounded-2xl">
+            <h3 className="text-2xl font-bold mb-4">What You Can (and Can't) Do</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div><p className="text-cyan-400 font-semibold">You Can</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Use the software for personal use</li><li>Access updates during your license</li><li>Contact support for assistance</li><li>Use on your own machine</li></ul></div>
+              <div><p className="text-red-400 font-semibold">You Can't</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Reverse engineer or decompile</li><li>Resell or transfer your license</li><li>Use for commercial purposes</li><li>Share with anti-cheat developers</li></ul></div>
+            </div>
+            <p className="text-gray-500 text-sm mt-4">Ambani is not liable for in-game bans or suspensions. Using our products and services is at your own risk at all times.</p>
+          </div>
+          <div className="glass-card p-8 rounded-2xl">
+            <h3 className="text-2xl font-bold mb-4">Refund Policy</h3>
+            <p className="text-gray-400 mb-2">All purchases are final and non-refundable. Chargebacks result in permanent ban.</p>
+          </div>
+          <div className="glass-card p-8 rounded-2xl">
+            <h3 className="text-2xl font-bold mb-4">Privacy Policy</h3>
+            <p className="text-gray-400 mb-4">We collect only necessary data (account, payment via Stripe, technical data). We never sell your data.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ========== PROJECTS SECTION (for home page) ==========
+const ProjectsSection = () => {
+  const projects = [
+    { title: "LMTSTORE E‑commerce", desc: "Next.js, Stripe, Tailwind", icon: "🛒", tech: ["Next.js", "Tailwind", "Framer Motion"] },
+    { title: "Cheat Menu", desc: "Lua, React, WebSockets", icon: "🎮", tech: ["Lua", "HTML/CSS", "JavaScript"] },
+    { title: "Website Portfolio", desc: "Three.js, React Three Fiber", icon: "🌐", tech: ["Three.js", "React", "Tailwind"] },
+  ];
+  return (
+    <section className="py-32 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-20">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight">Featured <span className="text-cyan-400">Projects</span></h2>
+          <p className="text-gray-400 text-lg mt-4">Interactive previews · Live demos</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((p, idx) => (
+            <motion.div
+              key={p.title}
+              className="glass-card p-8 rounded-2xl cursor-pointer"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1, duration: 0.6, ease: cinematicEase }}
+              whileHover={{ y: -8, borderColor: "rgba(0,191,255,0.4)" }}
+            >
+              <div className="text-6xl mb-5">{p.icon}</div>
+              <h3 className="text-2xl font-bold mb-2">{p.title}</h3>
+              <p className="text-gray-400 mb-4">{p.desc}</p>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {p.tech.map((t, i) => <span key={i} className="text-xs bg-white/5 px-3 py-1 rounded-full border border-white/10">{t}</span>)}
+              </div>
+              <button className="text-cyan-400 text-sm flex items-center gap-1 group transition-all duration-300 hover:gap-2">Live Preview →</button>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ========== TERMINAL SECTION (extended hacking logs) ==========
+const TerminalSection = () => {
+  const [logs] = useState([
+    "$ npm run dev",
+    "✓ Next.js ready",
+    "✓ PostgreSQL connected",
+    "✓ API initialized",
+    "✓ Websocket connected",
+    "✓ Deployment successful",
+    "> Nmap scan complete: 3 open ports found",
+    "> Exploiting vulnerable port 445...",
+    "> Meterpreter session opened",
+    "> Dumping SAM hashes...",
+    "> Credentials harvested",
+    "> Installing backdoor",
+    "> Persistence established",
+    "> Encrypting target files (ransomware simulation)",
+    "> Attack detected from IP 192.168.1.104",
+    "> Firewall bypassed",
+    "> Rootkit deployed",
+    "> Keylogger active",
+    "> Admin access granted",
+    "> Port 4444 opened for reverse shell",
+    "> System ready for commands...",
+  ]);
+  const [visibleLogs, setVisibleLogs] = useState<string[]>([]);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (index < logs.length) {
+        setVisibleLogs((prev) => [...prev, logs[index]]);
+        setIndex((prev) => prev + 1);
+      } else {
+        setTimeout(() => {
+          setVisibleLogs([]);
+          setIndex(0);
+        }, 3000);
+        clearInterval(interval);
+      }
+    }, 600);
+    return () => clearInterval(interval);
+  }, [index, logs]);
+  return (
+    <section className="py-32 px-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl p-6 shadow-2xl">
+          <div className="flex gap-2 mb-6">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+          <pre className="text-green-400 text-sm overflow-hidden font-mono">
+            {visibleLogs.map((log, idx) => <div key={idx} className="leading-7">{log}</div>)}
+            {visibleLogs.length < logs.length && <span className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1" />}
+          </pre>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ========== TESTIMONIALS SECTION (horizontal scroll) ==========
+const TestimonialsSection = () => {
+  const reviews = [
+    { name: "A3rian", text: "Silent aim is crazy good. Vehicle spawner saves so much time.", rating: 5, game: "FiveM" },
+    { name: "Ahmet", text: "Aimbot is smooth af. InstaLocker never fails.", rating: 5, game: "Valorant" },
+    { name: "DynastyEU", text: "Dino ESP and combat featuring effortless.", rating: 4, game: "ARK Evolved" },
+    { name: "Coffee", text: "Resource ESP saves hours of farming. Best ARK tool!", rating: 4, game: "ARK Evolved" },
+    { name: "ADAMKEV", text: "Teleportation and weapon spawner are insane. Must have!", rating: 4, game: "FiveM" },
+  ];
+  const duplicated = [...reviews, ...reviews];
+  return (
+    <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950 overflow-hidden">
+      <div className="text-center mb-20">
+        <h2 className="text-5xl md:text-6xl font-black tracking-tight">Customer <span className="text-cyan-400">Reviews</span></h2>
+        <div className="flex justify-center gap-2 mt-6">
+          <span className="text-yellow-400 text-3xl">★★★★★</span>
+          <span className="text-white text-lg ml-3">4.9/5 based on 100+ reviews</span>
+        </div>
+      </div>
+      <div className="relative overflow-hidden">
+        <motion.div
+          className="flex gap-6"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+        >
+          {duplicated.map((review, idx) => (
+            <div key={idx} className="w-96 flex-shrink-0 glass-card p-6 rounded-2xl">
+              <div className="flex text-yellow-400 text-xl mb-3">
+                {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+              </div>
+              <p className="text-gray-300 text-sm mb-4">"{review.text}"</p>
+              <div className="flex justify-between items-center">
+                <p className="text-white font-semibold">{review.name}</p>
+                <span className="text-cyan-400 text-xs border border-cyan-400/30 rounded-full px-3 py-1">{review.game}</span>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+// ========== CONTACT SECTION ==========
+const ContactSection = () => (
+  <section id="contact" className="py-32 px-6">
+    <div className="max-w-4xl mx-auto text-center">
+      <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-6">Contact <span className="text-cyan-400">Us</span></h2>
+      <p className="text-gray-400 text-lg mb-12">Have questions? Reach out to us!</p>
+      <div className="glass-card p-10 rounded-3xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <input type="text" placeholder="Your Name" className="px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400" />
+          <input type="email" placeholder="Your Email" className="px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400" />
+        </div>
+        <textarea rows={5} placeholder="Your Message" className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400 mb-8" />
+        <button className="bg-gradient-to-r from-cyan-600 to-blue-600 px-10 py-4 rounded-full text-lg font-semibold shadow-2xl shadow-cyan-500/20 transition-all duration-500 hover:scale-105 hover:shadow-cyan-500/40">
+          Send Message
+        </button>
+        <div className="mt-10 pt-6 border-t border-white/10 flex flex-wrap justify-center gap-8 text-sm">
+          <a href="https://t.me/Shuwangcoder" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2">
+            <span className="text-2xl">📱</span> Telegram: @shuwangcoder
+          </a>
+          <a href="https://www.facebook.com/share/1CBcPKM1nd/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2">
+            <span className="text-2xl">📘</span> Facebook: Shuwang
+          </a>
+          <a href="https://discord.gg/ppRPW6yF" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2">
+            <span className="text-2xl">🎮</span> Discord: MYSEFT
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+// ========== STORE PAGE: Hero Carousel + Sliders + Product Grid with auto‑rotate 25° ==========
+const productsImages = [
+  "500+.jpg", "anticheat.jpg", "ark.jpg", "forza5.jpg", "godofwar.jpg", "gtav.jpg", "horizon.jpg", "naruto.jpg", "pesfodball.jpg", "Sekiro.jpg", "spider.jpg", "theforest.jpg", "witcher.jpg"
+];
+const HeroCarousel = () => {
+  const [current, setCurrent] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % productsImages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <div className="relative w-full h-96 overflow-hidden rounded-2xl mb-12">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={current}
+          src={`/images/products/${productsImages[current]}`}
+          alt="banner"
+          className="absolute w-full h-full object-cover"
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+        />
+      </AnimatePresence>
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+        {productsImages.map((_, idx) => (
+          <button key={idx} onClick={() => setCurrent(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === current ? "bg-cyan-400 w-6" : "bg-white/50"}`} />
+        ))}
+      </div>
+    </div>
+  );
+};
+const InfiniteSlider = ({ direction = "left", speed = 20 }) => {
+  const duplicated = [...productsImages, ...productsImages];
+  return (
+    <div className="relative overflow-hidden py-4">
+      <motion.div
+        className="flex gap-4"
+        animate={{ x: direction === "left" ? ["0%", "-50%"] : ["-50%", "0%"] }}
+        transition={{ repeat: Infinity, duration: speed, ease: "linear" }}
+      >
+        {duplicated.map((img, idx) => (
+          <img key={idx} src={`/images/products/${img}`} className="w-48 h-32 object-cover rounded-xl" alt="product" />
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
+// Full product list (21 items) – same as before
+const storeProducts = [
+  { id: 1, title: "Steam Account - GTA V", category: "Steam Account", price: 0.01, originalPrice: 59.99, description: "Grand Theft Auto V - Online & Offline. FiveM Ready.", type: "account", gamesCount: 2, level: 25, image: "/images/products/gtav.jpg", discount: 97 },
+  { id: 2, title: "Steam Account - FIFA 25", category: "Steam Account", price: 0.02, originalPrice: 69.99, description: "FIFA 25 Ultimate Team, Career Mode, Online Access", type: "account", gamesCount: 1, level: 18, image: "/images/products/fifa.jpg", discount: 97 },
+  { id: 3, title: "Steam Account - SpiderMan", category: "Steam Account", price: 0.03, originalPrice: 59.99, description: "Marvel's Spider-Man Remastered + Miles Morales", type: "account", gamesCount: 2, level: 12, image: "/images/products/spider.jpg", discount: 97 },
+  { id: 4, title: "Steam Account - RDR2", category: "Steam Account", price: 0.03, originalPrice: 69.99, description: "Red Dead Redemption 2 - Story + Online", type: "account", gamesCount: 2, level: 20, image: "/images/products/rdr2.jpg", discount: 97 },
+  { id: 5, title: "Steam Account - God Of War", category: "Steam Account", price: 0.02, originalPrice: 59.99, description: "God of War (2018) + Ragnarok", type: "account", gamesCount: 2, level: 15, image: "/images/products/godofwar.jpg", discount: 97 },
+  { id: 6, title: "Steam Account - Horizon", category: "Steam Account", price: 0.03, originalPrice: 59.99, description: "Horizon Zero Dawn + Forbidden West", type: "account", gamesCount: 2, level: 14, image: "/images/products/horizon.jpg", discount: 97 },
+  { id: 7, title: "Steam Account - The Forest", category: "Steam Account", price: 0.01, originalPrice: 19.99, description: "The Forest + Sons of The Forest", type: "account", gamesCount: 2, level: 10, image: "/images/products/theforest.jpg", discount: 93 },
+  { id: 8, title: "Steam Account - Witcher 3", category: "Steam Account", price: 0.01, originalPrice: 39.99, description: "The Witcher 3: Wild Hunt Complete Edition", type: "account", gamesCount: 2, level: 22, image: "/images/products/witcher.jpg", discount: 95 },
+  { id: 9, title: "Steam Account - Football 26", category: "Steam Account", price: 0.01, originalPrice: 59.99, description: "Football 26 - Ultimate Team, Career Mode", type: "account", gamesCount: 1, level: 16, image: "/images/products/pesfodball.jpg", discount: 97 },
+  { id: 10, title: "Steam Account - Forza 5", category: "Steam Account", price: 0.02, originalPrice: 59.99, description: "Forza Horizon 5 - Premium Edition", type: "account", gamesCount: 1, level: 30, image: "/images/products/forza5.jpg", discount: 97 },
+  { id: 11, title: "Steam Account - Black Myth Wukong", category: "Steam Account", price: 0.01, originalPrice: 59.99, description: "Black Myth: Wukong - Full Game", type: "account", gamesCount: 1, level: 8, image: "/images/products/blackwukong.jpg", discount: 95 },
+  { id: 12, title: "Steam Account - Naruto", category: "Steam Account", price: 0.02, originalPrice: 49.99, description: "Naruto Ultimate Ninja Storm Series", type: "account", gamesCount: 1, level: 35, image: "/images/products/naruto.jpg", discount: 97 },
+  { id: 13, title: "Steam Account - ARK", category: "Steam Account", price: 0.01, originalPrice: 49.99, description: "ARK Survival Evolved + All DLCs", type: "account", gamesCount: 2, level: 50, image: "/images/products/ark.jpg", discount: 96 },
+  { id: 14, title: "Steam Account - Sekiro", category: "Steam Account", price: 0.01, originalPrice: 59.99, description: "Sekiro: Shadows Die Twice - GOTY", type: "account", gamesCount: 1, level: 12, image: "/images/products/sekiro.jpg", discount: 97 },
+  { id: 15, title: "Steam Account - 500+ Games Bundle", category: "Steam Account", price: 0.10, originalPrice: 499.99, description: "Mega Bundle - 500+ Premium Steam Games!", type: "account", gamesCount: 2, level: 99, image: "/images/products/500plus.jpg", discount: 98 },
+  { id: 16, title: "ATR SAMPLE PACK", category: "ZIP File", price: 0.02, originalPrice: 19.99, description: "1000+ Items - Professional Sound Effects", type: "zip", fileSize: "2.5 GB", image: "/images/products/atrsample.jpg", discount: 90 },
+  { id: 17, title: "ATR STUP SUPER", category: "ZIP File", price: 0.03, originalPrice: 29.99, description: "Premium Studio Stup Super Pack", type: "zip", fileSize: "3.2 GB", image: "/images/products/atrstup.jpg", discount: 90 },
+  { id: 18, title: "HSO Sample Recording", category: "ZIP File", price: 0.01, originalPrice: 14.99, description: "HSO Studio Quality Sample Recordings", type: "zip", fileSize: "1.8 GB", image: "/images/products/hso_sample.jpg", discount: 90 },
+  { id: 19, title: "Roblox Menu", category: "ZIP File", price: 0.01, originalPrice: 4.99, description: "Roblox Custom Menu UI - Scripts", type: "zip", fileSize: "50 MB", image: "/images/products/robloxmenu.jpg", discount: 80 },
+  { id: 20, title: "AntiCheat Roblox Server", category: "ZIP File", price: 0.05, originalPrice: 19.99, description: "Advanced Anticheat for Roblox", type: "zip", fileSize: "15 MB", image: "/images/products/anticheat.jpg", discount: 75 },
+  { id: 21, title: "FiveM Cheat Ambani", category: "ZIP File", price: 0.03, originalPrice: 29.99, description: "Premium FiveM Cheat Menu - Aimbot, ESP", type: "zip", fileSize: "120 MB", image: "/images/products/ambanicheat.jpg", discount: 80 },
+];
+
+// Rotating product card wrapper (auto 25° back-and-forth)
+const RotatingProductCard = ({ children }: { children: React.ReactNode }) => {
+  const [rotate, setRotate] = useState(0);
+  const [direction, setDirection] = useState(1);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotate((prev) => {
+        let next = prev + direction * 0.2;
+        if (next >= 25) {
+          setDirection(-1);
+          return 25;
+        } else if (next <= -25) {
+          setDirection(1);
+          return -25;
+        }
+        return next;
+      });
+    }, 30);
+    return () => clearInterval(interval);
+  }, [direction]);
+  return (
+    <motion.div
+      style={{ transform: `perspective(800px) rotateY(${rotate}deg)`, transition: "transform 0.03s linear" }}
+      className="h-full"
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const StorePage = () => {
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const filtered = storeProducts.filter(p => {
+    const matchFilter = filter === "all" || (filter === "account" && p.type === "account") || (filter === "zip" && p.type === "zip");
+    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
+    return matchFilter && matchSearch;
   });
 
-  const handleBuy = (p: any) => {
-    window.open("https://t.me/Shuwangcoder", "_blank");
-  };
-
-  // ABOUT PAGE with Flashing Effect and nice font
-  if (activePage === "about") return (
-    <main className="relative z-0 bg-primary min-h-screen">
-      <NavBar setActivePage={setActivePage} />
-      <div className="pt-32 px-4 max-w-4xl mx-auto">
-        <h1 className="text-6xl font-bold text-white mb-6 text-center" style={{ fontFamily: "'Poppins', 'Inter', sans-serif" }}>
-          About <FlashingText>LMT</FlashingText><FlashingText>STORE</FlashingText>
-        </h1>
-        <div className="bg-gray-900/50 rounded-xl p-8 border border-gray-700 backdrop-blur-sm">
-          <p className="text-gray-200 text-xl mb-6 leading-relaxed" style={{ fontFamily: "'Poppins', 'Inter', sans-serif" }}>
-            <FlashingText>✨ Premium digital marketplace</FlashingText> for Steam accounts and gaming assets.
-          </p>
-          <div className="space-y-4 text-gray-300 text-lg">
-            <p className="flex items-center gap-3">
-              <span className="text-2xl">⚡</span> Instant delivery, 24/7 support, best prices guaranteed.
-            </p>
-            <p className="flex items-center gap-3">
-              <span className="text-2xl">🌟</span> Serving 10,000+ satisfied customers worldwide.
-            </p>
-            <p className="flex items-center gap-3 pt-4 border-t border-gray-700">
-              <span className="text-2xl">📱</span> Contact us on Telegram: <FlashingText>@Shuwangcoder</FlashingText>
-            </p>
-          </div>
-        </div>
-      </div>
-      <Stars />
-    </main>
-  );
-
-  // STORE PAGE with "LMT STORE" title
-  if (activePage === "store") return (
-    <main className="relative z-0 bg-primary min-h-screen">
-      <NavBar setActivePage={setActivePage} />
-      <div className="pt-32 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="text-center mb-4">
-              <AnimatedTitle3D text1="LMT" text2="STORE" />
-            </div>
-            <p className="text-gray-400 text-lg">Steam Accounts & Digital Assets</p>
-          </div>
-          <div className="flex flex-wrap justify-between gap-4 mb-8">
-            <div className="flex gap-3">
-              <button onClick={() => setFilter("all")} className={`px-5 py-2 rounded-full ${filter === "all" ? "bg-[#00BFFF]" : "bg-gray-800"}`}>All</button>
-              <button onClick={() => setFilter("account")} className={`px-5 py-2 rounded-full ${filter === "account" ? "bg-[#00BFFF]" : "bg-gray-800"}`}>Steam</button>
-              <button onClick={() => setFilter("zip")} className={`px-5 py-2 rounded-full ${filter === "zip" ? "bg-[#00BFFF]" : "bg-gray-800"}`}>ZIP</button>
-            </div>
-            <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-4 py-2 rounded-full bg-gray-800 text-white w-full md:w-64" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{filteredProducts.map(p => { const discount = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100); return (<RotatingCard3D key={p.id}><div className="bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700 hover:border-[#00BFFF] transition-all hover:-translate-y-2"><div className="relative h-48 bg-gradient-to-br from-blue-900/50 to-pink-900/50 flex items-center justify-center">{p.image ? <img src={p.image} alt={p.title} className="w-full h-full object-cover" /> : <span className="text-6xl">{p.type === "account" ? "🎮" : "📦"}</span>}{discount > 0 && <span className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">-{discount}%</span>}<span className="absolute top-3 left-3 bg-[#00BFFF]/80 text-white text-xs px-2 py-1 rounded-full">{p.category}</span></div><div className="p-5"><h3 className="text-xl font-bold mb-1">{p.type === "account" ? (
-  <RotatingText3D text1="Steam" text2="Account" text3={`- ${p.title.split(" - ")[1]}`} />
-) : (
-  <RotatingText3D text1="" text2={p.title} text3="" isZip={true} />
-)}</h3><p className="text-gray-400 text-sm mb-3">{p.description}</p>{p.type === "account" && <div className="flex flex-wrap gap-2 mb-3"><span className="bg-gray-800 px-2 py-1 rounded-full text-xs">🎮 {p.games?.length} Games</span><span className="bg-gray-800 px-2 py-1 rounded-full text-xs">Level {p.level}</span></div>}{p.type === "zip" && <div className="mb-3 text-xs text-gray-400">📦 Size: {p.fileSize}</div>}<div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-800"><div><span className="text-2xl font-bold text-[#00BFFF]">${p.price}</span>{p.originalPrice > p.price && <span className="text-gray-500 line-through text-sm ml-2">${p.originalPrice}</span>}</div><button onClick={() => handleBuy(p)} className="bg-[#00BFFF] hover:bg-blue-600 px-5 py-2 rounded-full text-white text-sm">Buy Now 🛒</button></div></div></div></RotatingCard3D>);})}</div>
-        </div>
-      </div>
-      <Stars />
-    </main>
-  );
-
-  // WORK PAGE
-  if (activePage === "work") return (
-    <main className="relative z-0 bg-primary min-h-screen"><NavBar setActivePage={setActivePage} /><div className="pt-32 px-4 max-w-6xl mx-auto"><h1 className="text-5xl font-bold text-white mb-6">Our <span className="text-[#00BFFF]">Work</span></h1><div className="grid grid-cols-1 md:grid-cols-3 gap-6">{["FiveM Cheat System", "Steam Account Delivery", "AntiCheat Roblox"].map((item, i) => (<div key={i} className="bg-gray-900/50 rounded-xl p-6 border border-gray-700 text-center"><div className="text-5xl mb-4">{["⚡", "🎮", "🛡️"][i]}</div><h3 className="text-xl font-bold text-white mb-2">{item}</h3><p className="text-gray-400">Premium delivery system</p></div>))}</div></div><Stars /></main>
-  );
-
-  // CONTACT PAGE
-  if (activePage === "contact") return (
-    <main className="relative z-0 bg-primary min-h-screen"><NavBar setActivePage={setActivePage} /><div className="pt-32 px-4 max-w-2xl mx-auto"><h1 className="text-5xl font-bold text-white mb-6">Contact <span className="text-[#00BFFF]">Us</span></h1><div className="bg-gray-900/50 rounded-xl p-8 border border-gray-700"><div className="mb-4"><label className="text-white block mb-2">Email</label><input type="email" className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white" /></div><div className="mb-4"><label className="text-white block mb-2">Message</label><textarea rows={4} className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white"></textarea></div><button className="bg-[#00BFFF] hover:bg-blue-600 px-6 py-2 rounded-full text-white font-semibold">Send Message</button><div className="mt-6 text-center"><p className="text-gray-400">Or contact us on Telegram:</p><p className="text-[#00BFFF] text-lg font-bold">@Shuwangcoder</p></div></div></div><Stars /></main>
-  );
-
-  // HOME PAGE
   return (
-    <main className="relative z-0 bg-primary">
-      <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center w-screen h-screen">
-        <NavBar setActivePage={setActivePage} />
-        
-        <section className="relative w-full min-h-[400px] mx-auto mt-20">
-          <div className={`mx-auto ${styles.paddingX} -mb-20 flex flex-row items-start gap-5`}>
-            <div className="flex flex-col justify-center items-center mt-5">
-              <div className="w-5 h-5 rounded-full bg-[#915EFF]" />
-              <div className="w-1 sm:h-40 h-20 violet-gradient" />
-            </div>
-            <div>
-              <h1 className={`${styles.hero.head.text} text-white`}>
-                Welcome to{" "}
-                <span className="text-[#00BFFF]">LMT</span>
-                <span className="text-[#FF69B4]">STORE</span>
-              </h1>
-              <p className={`${styles.hero.sub.text} mt-2 text-white-100`}>
-                <AnimatedGradientText>Premium Steam Accounts & Digital Assets - Instant Delivery</AnimatedGradientText>
-              </p>
-            </div>
-          </div>
-          
-          {/* <Computer /> - Commented out to remove 3D model */}
-          <div className="absolute xs:bottom-10 bottom-10 w-full flex justify-center items-center">
-            <a href="#products">
-              <div className="w-[35px] h-[64px] rounded-3xl border-4 border-secondary flex justify-center items-center p-2">
-                <div className="w-3 h-3 rounded-full bg-secondary mb-1 animate-bounce"></div>
-              </div>
-            </a>
-          </div>
-        </section>
-      </div>
+    <main className="relative z-0 bg-primary min-h-screen pt-32">
+      <div className="max-w-7xl mx-auto px-6">
+        <HeroCarousel />
+        <InfiniteSlider direction="left" speed={25} />
+        <InfiniteSlider direction="right" speed={30} />
 
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="mt-16">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-2">
-              <RotatingText3D text1="Featured" text2="Products" />
-            </h2>
-            <p className="text-gray-400">Best selling items this week</p>
-          </div>
-          
-          <div className="flex flex-wrap justify-between gap-4 mb-8">
-            <div className="flex gap-3">
-              <button onClick={() => setFilter("all")} className={`px-5 py-2 rounded-full ${filter === "all" ? "bg-[#00BFFF]" : "bg-gray-800"}`}>All</button>
-              <button onClick={() => setFilter("account")} className={`px-5 py-2 rounded-full ${filter === "account" ? "bg-[#00BFFF]" : "bg-gray-800"}`}>Steam</button>
-              <button onClick={() => setFilter("zip")} className={`px-5 py-2 rounded-full ${filter === "zip" ? "bg-[#00BFFF]" : "bg-gray-800"}`}>ZIP</button>
+            <div className="flex flex-wrap justify-center gap-4 mb-6">
+              <button onClick={() => setFilter("all")} className={`px-5 py-2 rounded-full ${filter === "all" ? "bg-cyan-500" : "bg-white/5"} text-white`}>All</button>
+              <button onClick={() => setFilter("account")} className={`px-5 py-2 rounded-full ${filter === "account" ? "bg-cyan-500" : "bg-white/5"} text-white`}>Steam Games</button>
+              <button onClick={() => setFilter("zip")} className={`px-5 py-2 rounded-full ${filter === "zip" ? "bg-cyan-500" : "bg-white/5"} text-white`}>ZIP Files</button>
+              <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400" />
             </div>
-            <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-4 py-2 rounded-full bg-gray-800 text-white w-full md:w-64" />
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(p => {
-              const discount = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filtered.map(p => {
+              const discountPercent = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
               return (
-                <RotatingCard3D key={p.id}>
-                  <div className="bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700 hover:border-[#00BFFF] transition-all hover:-translate-y-2">
-                    <div className="relative h-48 bg-gradient-to-br from-blue-900/50 to-pink-900/50 flex items-center justify-center">
-                      {p.image ? (
-                        <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-6xl">{p.type === "account" ? "🎮" : "📦"}</span>
-                      )}
-                      {discount > 0 && <span className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">-{discount}%</span>}
-                      <span className="absolute top-3 left-3 bg-[#00BFFF]/80 text-white text-xs px-2 py-1 rounded-full">{p.category}</span>
+                <RotatingProductCard key={p.id}>
+                  <div className="glass-card rounded-2xl overflow-hidden group cursor-pointer hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
+                    <div className="relative h-48">
+                      <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                      <span className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">-{discountPercent}%</span>
+                      <span className="absolute top-3 left-3 bg-cyan-400/80 text-white text-xs px-2 py-1 rounded-full">{p.category}</span>
                     </div>
-                    <div className="p-5">
-                      <h3 className="text-xl font-bold mb-1">
-                        {p.type === "account" ? (
-                          <RotatingText3D text1="Steam" text2="Account" text3={`- ${p.title.split(" - ")[1]}`} />
-                        ) : (
-                          <RotatingText3D text1="" text2={p.title} text3="" isZip={true} />
-                        )}
-                      </h3>
+                    <div className="p-5 flex-1 flex flex-col">
+                      <h3 className="text-xl font-bold mb-1">{p.title}</h3>
                       <p className="text-gray-400 text-sm mb-3">{p.description.substring(0, 80)}...</p>
-                      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-800">
-                        <div>
-                          <span className="text-2xl font-bold text-[#00BFFF]">${p.price}</span>
+                      {p.type === "account" && (
+                        <div className="flex flex-wrap gap-2 mb-3 text-xs">
+                          <span className="bg-white/10 px-2 py-1 rounded-full">🎮 {p.gamesCount} Games</span>
+                          <span className="bg-white/10 px-2 py-1 rounded-full">Level {p.level}</span>
                         </div>
-                        <button onClick={() => handleBuy(p)} className="bg-[#00BFFF] hover:bg-blue-600 px-5 py-2 rounded-full text-white text-sm">Buy Now 🛒</button>
+                      )}
+                      {p.type === "zip" && <div className="mb-3 text-xs text-gray-400">📦 Size: {p.fileSize}</div>}
+                      <div className="flex justify-between items-center mt-auto pt-4 border-t border-white/10">
+                        <div>
+                          <span className="text-2xl font-bold text-cyan-400">${p.price}</span>
+                          <span className="text-gray-500 line-through text-sm ml-2">${p.originalPrice}</span>
+                        </div>
+                        <button onClick={() => window.open("https://t.me/Shuwangcoder", "_blank")} className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-full text-sm">Buy Now 🛒</button>
                       </div>
                     </div>
                   </div>
-                </RotatingCard3D>
+                </RotatingProductCard>
               );
             })}
           </div>
         </div>
-      </section>
-      <Stars />
-      <style jsx global>{`
-        @keyframes pulse {
-          0%, 100% { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
-          50% { text-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
-        }
-        @keyframes rotate3dHalf {
-          0% {
-            transform: rotateY(0deg) scale(1);
-            opacity: 0.5;
-          }
-          50% {
-            transform: rotateY(90deg) scale(1.05);
-            opacity: 0.8;
-          }
-          100% {
-            transform: rotateY(0deg) scale(1);
-            opacity: 1;
-          }
-        }
-        @keyframes rotate3dFull {
-          0% {
-            transform: rotateY(0deg) scale(1);
-            opacity: 0.7;
-          }
-          25% {
-            transform: rotateY(10deg) scale(1.05);
-          }
-          50% {
-            transform: rotateY(0deg) scale(1.1);
-            opacity: 1;
-          }
-          75% {
-            transform: rotateY(-10deg) scale(1.05);
-          }
-          100% {
-            transform: rotateY(0deg) scale(1);
-            opacity: 0.7;
-          }
-        }
-      `}</style>
+      </div>
     </main>
+  );
+};
+
+// ========== COMBINED ABOUT PAGE (Experience + TechStack + Terms) ==========
+const CombinedAboutPage = () => {
+  return (
+    <>
+      <AboutSection />
+      <ExperienceSection />
+      <TechStack />
+      <TermsSection />
+    </>
+  );
+};
+
+// ========== COMBINED WORK PAGE (Testimonials + Terminal) ==========
+const CombinedWorkPage = () => {
+  return (
+    <>
+      <TestimonialsSection />
+      <TerminalSection />
+    </>
+  );
+};
+
+// ========== CREATE ANIMATED COMPONENTS (for home page) ==========
+const AnimatedAbout = withScrollAnimation(AboutSection);
+const AnimatedTechStack = withScrollAnimation(TechStack);
+const AnimatedExperience = withScrollAnimation(ExperienceSection);
+const AnimatedProjects = withScrollAnimation(ProjectsSection);
+const AnimatedTerminal = withScrollAnimation(TerminalSection);
+const AnimatedTestimonials = withScrollAnimation(TestimonialsSection);
+const AnimatedContact = withScrollAnimation(ContactSection);
+const AnimatedTerms = withScrollAnimation(TermsSection);
+
+// ========== BACKGROUND EFFECTS ==========
+const GlowOrbs = () => (
+  <>
+    <div className="fixed top-[-20%] left-[10%] w-[800px] h-[800px] bg-cyan-500/30 blur-[200px] rounded-full pointer-events-none z-0" />
+    <div className="fixed bottom-[-20%] right-[10%] w-[800px] h-[800px] bg-purple-500/30 blur-[200px] rounded-full pointer-events-none z-0" />
+    <div className="fixed top-1/3 left-1/2 w-[600px] h-[600px] bg-red-500/15 blur-[150px] rounded-full pointer-events-none z-0" />
+  </>
+);
+const ScrollProgress = () => {
+  const { scrollYProgress } = useScroll();
+  return <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />;
+};
+const ParticleBackground = () => (
+  <Particles
+    className="fixed inset-0 -z-10"
+    options={{
+      fpsLimit: 60,
+      particles: {
+        number: { value: 80, density: { enable: true, area: 1000 } },
+        color: { value: ["#00BFFF", "#FF69B4", "#ff0000"] },
+        links: { color: "#ffffff", opacity: 0.05, distance: 200 },
+        move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false },
+        opacity: { value: 0.4 },
+        size: { value: 2 },
+      },
+      interactivity: { events: { onHover: { enable: true, mode: "repulse" } } },
+    }}
+  />
+);
+
+// ========== MAIN HOME PAGE ==========
+export default function HomePage() {
+  const [activePage, setActivePage] = useState<"home" | "about" | "store" | "work" | "contact">("home");
+
+  return (
+    <SmoothScrollProvider>
+      <div className="bg-layered noise relative">
+        <CodeBackground />
+        <GlowOrbs />
+        <ScrollProgress />
+        <ParticleBackground />
+        <CommandMenu />
+        <MorphingNavbar setActivePage={setActivePage} activePage={activePage} />
+
+        <main className="relative z-10">
+          {activePage === "home" && (
+            <>
+              <HeroSection />
+              <AnimatedAbout />
+              <AnimatedTechStack />
+              <AnimatedExperience />
+              <AnimatedProjects />
+              <AnimatedTerminal />
+              <AnimatedTestimonials />
+              <AnimatedTerms />
+              <AnimatedContact />
+            </>
+          )}
+          {activePage === "about" && <CombinedAboutPage />}
+          {activePage === "store" && <StorePage />}
+          {activePage === "work" && <CombinedWorkPage />}
+          {activePage === "contact" && <ContactSection />}
+        </main>
+
+        <footer className="py-12 text-center text-gray-500 text-sm border-t border-white/5">
+          © 2025 LMTSTORE · Built with Next.js & Framer Motion · <kbd className="px-2 py-1 bg-white/5 rounded-md">⌘</kbd>+<kbd className="px-2 py-1 bg-white/5 rounded-md">K</kbd> to search
+        </footer>
+      </div>
+    </SmoothScrollProvider>
   );
 }
