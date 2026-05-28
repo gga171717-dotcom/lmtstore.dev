@@ -43,10 +43,7 @@ const CommandMenu = () => {
         <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 transition-all duration-500" />
         <Dialog.Content className="fixed top-[25vh] left-1/2 -translate-x-1/2 w-[90%] max-w-2xl z-50 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl focus:outline-none transition-all duration-500">
           <Command className="rounded-3xl overflow-hidden">
-            <Command.Input
-              className="w-full p-5 bg-transparent text-white text-lg border-b border-white/10 outline-none placeholder:text-gray-500"
-              placeholder="Search projects, tools, or pages..."
-            />
+            <Command.Input className="w-full p-5 bg-transparent text-white text-lg border-b border-white/10 outline-none placeholder:text-gray-500" placeholder="Search projects, tools, or pages..." />
             <Command.List className="p-3 max-h-96 overflow-y-auto">
               <Command.Group heading="Pages" className="text-xs text-gray-400 mb-3 tracking-wide">
                 <Command.Item className="p-3 rounded-xl hover:bg-white/10 cursor-pointer">🏠 Home</Command.Item>
@@ -131,6 +128,8 @@ const withScrollAnimation = (WrappedComponent: React.ComponentType<any>) => {
 const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: string) => void; activePage: string }) => {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
+  const [clickEffect, setClickEffect] = useState<string | null>(null);
+
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => setScrolled(latest > 20));
     return () => unsubscribe();
@@ -145,6 +144,8 @@ const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: s
   const navbarShadow = useTransform(scrollY, [0, 100], ["0 0 0 rgba(0,0,0,0)", "0 8px 32px rgba(0,191,255,0.3)"]);
 
   const handleClick = (page: string) => {
+    setClickEffect(page);
+    setTimeout(() => setClickEffect(null), 300);
     setActivePage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -167,7 +168,7 @@ const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: s
       className="fixed top-6 z-50 flex items-center justify-between gap-6 md:gap-8 rounded-full border backdrop-blur-xl"
     >
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleClick("home")}>
-        <video src="/video/logovdo1.mp4" autoPlay loop muted playsInline className="w-8 h-8 rounded-lg object-cover" />
+        <video src="/video/logovdo.mp4" autoPlay loop muted playsInline className="w-8 h-8 rounded-lg object-cover" />
         <span className="text-xl font-bold tracking-tight">
           <span className="text-cyan-400">LMT</span>
           <span className="text-white">STORE</span>
@@ -192,6 +193,14 @@ const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: s
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
+            {clickEffect === item && (
+              <motion.span
+                initial={{ opacity: 1, scale: 1 }}
+                animate={{ opacity: 0, scale: 2 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 bg-white rounded-full pointer-events-none"
+              />
+            )}
           </motion.button>
         ))}
       </div>
@@ -207,8 +216,49 @@ const MorphingNavbar = ({ setActivePage, activePage }: { setActivePage: (page: s
   );
 };
 
-// ========== HERO SECTION ==========
-const HeroSection = () => {
+// ========== SPLASH HERO (LANDING) ==========
+const HeroSectionLanding = ({ onStart }: { onStart: () => void }) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => setMousePosition({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+      <div
+        className="pointer-events-none fixed inset-0 z-30 transition duration-500"
+        style={{ background: `radial-gradient(800px at ${mousePosition.x}px ${mousePosition.y}px, rgba(0,191,255,0.15), transparent 70%)` }}
+      />
+      <div className="relative z-10 text-center max-w-6xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: cinematicEase }}>
+          <span className="text-cyan-400 text-sm md:text-base font-mono tracking-wider">✦ WELCOME TO ✦</span>
+        </motion.div>
+        <motion.h1
+          className="text-7xl md:text-8xl lg:text-9xl font-black mt-4 leading-[1.05] tracking-tight"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: cinematicEase }}
+        >
+          <span className="bg-gradient-to-r from-blue-500 via-white to-red-600 bg-clip-text text-transparent">LMT</span>
+          <span className="bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">STORE</span>
+        </motion.h1>
+        <motion.p className="text-gray-300 max-w-2xl mx-auto mt-6 text-lg md:text-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}>
+          The premium product and best price
+        </motion.p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} className="mt-10">
+          <button onClick={onStart} className="group relative overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-10 py-4 text-lg font-semibold backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-cyan-400/40 hover:shadow-2xl hover:shadow-cyan-500/30">
+            Start Dominating →
+          </button>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+// ========== FULL HERO (AFTER LANDING) ==========
+const HeroSectionFull = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollYProgress } = useScroll();
   const yParallax = useTransform(scrollYProgress, [0, 1], [0, -200]);
@@ -227,7 +277,7 @@ const HeroSection = () => {
       />
       <motion.div style={{ y: yParallax }} className="relative z-10 text-center max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: cinematicEase }}>
-          <span className="text-cyan-400 text-sm md:text-base font-mono tracking-wider">✦ WELCOME TO ✦</span>
+          <span className="text-cyan-400 text-sm md:text-base font-mono tracking-wider">✦ BUILDING SCALABLE FULLSTACK EXPERIENCES</span>
         </motion.div>
         <motion.h1
           className="text-7xl md:text-8xl lg:text-9xl font-black mt-4 leading-[1.05] tracking-tight"
@@ -235,21 +285,16 @@ const HeroSection = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: cinematicEase }}
         >
-          <span className="bg-gradient-to-r from-red-500 via-blue-500 to-red-500 bg-clip-text text-transparent animate-[gradient_3s_ease_infinite]">
-            LMTSTORE
-          </span>
+          <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">FULLSTACK</span>
+          <br />
+          <span className="text-white">DEVELOPER</span>
         </motion.h1>
-        <motion.p
-          className="text-gray-300 max-w-2xl mx-auto mt-6 text-lg md:text-xl"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-        >
+        <motion.p className="text-gray-300 max-w-2xl mx-auto mt-6 text-lg md:text-xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}>
           The premium product and best price
         </motion.p>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} className="mt-10">
           <button className="group relative overflow-hidden rounded-full border border-white/10 bg-white/[0.05] px-10 py-4 text-lg font-semibold backdrop-blur-xl transition-all duration-500 hover:scale-105 hover:border-cyan-400/40 hover:shadow-2xl hover:shadow-cyan-500/30">
-            Start Dominating →
+            Explore Work →
           </button>
         </motion.div>
       </motion.div>
@@ -257,7 +302,7 @@ const HeroSection = () => {
   );
 };
 
-// ========== ABOUT SECTION ==========
+// ========== ABOUT SECTION (CARDS + CREDIT TEAM) ==========
 const AboutSection = () => {
   const items = [
     { title: "Steam Accounts", video: "/video/Steam.mp4", desc: "Premium accounts with top games at affordable prices", color: "text-cyan-400" },
@@ -269,7 +314,7 @@ const AboutSection = () => {
     <section className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-6xl font-black tracking-tight">About <span className="text-cyan-400">LMTSTORE</span></h2>
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading">About LMTSTORE</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mt-6 text-lg">Premium digital marketplace for Steam accounts and gaming assets.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -289,6 +334,26 @@ const AboutSection = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Credit Team Work */}
+        <div className="mt-24 glass-card p-8 rounded-2xl">
+          <h3 className="text-3xl font-bold text-center fire-heading mb-8">Credit Team Work</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+            <div><span className="text-cyan-400 font-bold">Founder</span><br />ATR STUP</div>
+            <div><span className="text-cyan-400 font-bold">Web Developer</span><br />LMTDEV</div>
+            <div><span className="text-cyan-400 font-bold">Producer</span><br />HSO Remix, ATR Remix</div>
+            <div><span className="text-cyan-400 font-bold">Resaler</span><br />Shuwang</div>
+            <div><span className="text-cyan-400 font-bold">Crack Beginner</span><br />Caom</div>
+            <div><span className="text-cyan-400 font-bold">Cheat Engineer</span><br />N.TREY</div>
+            <div><span className="text-cyan-400 font-bold">Botnet Service</span><br />Coanh</div>
+            <div><span className="text-cyan-400 font-bold">FIveM Developer</span><br />KytaHochi</div>
+            <div><span className="text-cyan-400 font-bold">Boster</span><br />S.LAY</div>
+            <div><span className="text-cyan-400 font-bold">Cyber Attack</span><br />N.TREY</div>
+            <div><span className="text-cyan-400 font-bold">Malware Develoment</span><br />N.TREY</div>
+            <div><span className="text-cyan-400 font-bold">Work Suppourt</span><br />Meng</div>
+          </div>
+          <div className="text-center mt-8 text-gray-500 text-sm">Last update: 27.05.2026</div>
+        </div>
       </div>
     </section>
   );
@@ -306,7 +371,7 @@ const ExperienceSection = () => {
     <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-6xl font-black tracking-tight">Work <span className="text-cyan-400">Experience</span></h2>
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading">Work Experience</h2>
           <p className="text-gray-400 text-lg mt-4">My journey as a developer</p>
         </div>
         <div className="relative border-l-2 border-cyan-400/30 ml-6 md:ml-0">
@@ -319,7 +384,7 @@ const ExperienceSection = () => {
               transition={{ delay: idx * 0.1, duration: 0.6, ease: cinematicEase }}
             >
               <div className="absolute w-4 h-4 bg-cyan-400 rounded-full -left-[9px] mt-2 border-2 border-white" />
-              <div className="glass-card p-8 rounded-2xl">
+              <div className="glass-card p-8 rounded-2xl hover:border-cyan-400 transition-all duration-300 hover:-translate-y-1">
                 <span className="text-cyan-400 text-sm font-mono">{exp.year}</span>
                 <h3 className="text-2xl font-bold mt-2">{exp.title}</h3>
                 <p className="text-gray-400">{exp.company}</p>
@@ -333,72 +398,41 @@ const ExperienceSection = () => {
   );
 };
 
-// ========== TECH STACK ==========
-const TechStack = () => {
+// ========== TECH STACK MARQUEE (2 ROWS) ==========
+const TechStackMarquee = () => {
   const techs = ["React", "Next.js", "Node.js", "PostgreSQL", "Docker", "TypeScript", "Tailwind", "Three.js"];
+  const duplicated = [...techs, ...techs];
   return (
-    <section className="py-32 bg-black/40">
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-16">Tech <span className="text-cyan-400">Stack</span></h2>
-        <div className="flex flex-wrap justify-center gap-6">
-          {techs.map((tech, i) => (
-            <motion.div
-              key={tech}
-              className="glass-card px-8 py-4 rounded-full border border-white/10"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.5, ease: cinematicEase }}
-              whileHover={{ y: -6, borderColor: "#0ea5e9", boxShadow: "0 0 20px rgba(0,191,255,0.3)" }}
-            >
-              <span className="text-white font-medium text-lg">{tech}</span>
-            </motion.div>
-          ))}
-        </div>
+    <section className="py-32 bg-black/40 overflow-hidden">
+      <div className="text-center mb-12">
+        <h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading">Tech Stack</h2>
       </div>
-    </section>
-  );
-};
-
-// ========== TERMS & POLICIES ==========
-const TermsSection = () => {
-  return (
-    <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl md:text-6xl font-black tracking-tight">Terms & <span className="text-cyan-400">Policies</span></h2>
-          <p className="text-gray-400 text-lg mt-4">Everything you need to know about using Ambani. Our commitment to transparency, security, and your rights as a valued member of our community.</p>
-          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-gray-400">
-            <span className="bg-white/5 px-4 py-2 rounded-full">2026-02-06</span>
-            <span className="bg-white/5 px-4 py-2 rounded-full">Guaranteed Protection</span>
-            <span className="bg-white/5 px-4 py-2 rounded-full">200+ Users</span>
-            <span className="bg-white/5 px-4 py-2 rounded-full">Terms of Service</span>
-            <span className="bg-white/5 px-4 py-2 rounded-full">Refund Policy</span>
-            <span className="bg-white/5 px-4 py-2 rounded-full">Privacy Policy</span>
-          </div>
+      <div className="relative">
+        <div className="overflow-hidden py-4">
+          <motion.div
+            className="flex gap-8 whitespace-nowrap"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+          >
+            {duplicated.map((tech, idx) => (
+              <div key={idx} className="glass-card px-8 py-4 rounded-full border border-white/10 inline-block">
+                <span className="text-white font-medium text-lg">{tech}</span>
+              </div>
+            ))}
+          </motion.div>
         </div>
-        <div className="space-y-12">
-          <div className="glass-card p-8 rounded-2xl">
-            <h3 className="text-2xl font-bold mb-4">Terms of Service</h3>
-            <p className="text-gray-300 mb-4">Agreement to Terms</p>
-            <p className="text-gray-400 mb-4">Welcome to Ambani. By accessing our platform, you&apos;re entering into a legally binding agreement with us...</p>
-            <p className="text-gray-400">By using Ambani services, if you don&apos;t agree with any part of these terms, please do not use our services.</p>
-          </div>
-          <div className="glass-card p-8 rounded-2xl">
-            <h3 className="text-2xl font-bold mb-4">What You Can (and Can&apos;t) Do</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div><p className="text-cyan-400 font-semibold">You Can</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Use the software for personal use</li><li>Access updates during your license</li><li>Contact support for assistance</li><li>Use on your own machine</li></ul></div>
-              <div><p className="text-red-400 font-semibold">You Can&apos;t</p><ul className="list-disc list-inside text-gray-400 mt-2"><li>Reverse engineer or decompile</li><li>Resell or transfer your license</li><li>Use for commercial purposes</li><li>Share with anti-cheat developers</li></ul></div>
-            </div>
-            <p className="text-gray-500 text-sm mt-4">Ambani is not liable for in-game bans or suspensions. Using our products and services is at your own risk at all times.</p>
-          </div>
-          <div className="glass-card p-8 rounded-2xl">
-            <h3 className="text-2xl font-bold mb-4">Refund Policy</h3>
-            <p className="text-gray-400 mb-2">All purchases are final and non-refundable. Chargebacks result in permanent ban.</p>
-          </div>
-          <div className="glass-card p-8 rounded-2xl">
-            <h3 className="text-2xl font-bold mb-4">Privacy Policy</h3>
-            <p className="text-gray-400 mb-4">We collect only necessary data (account, payment via Stripe, technical data). We never sell your data.</p>
-          </div>
+        <div className="overflow-hidden py-4 mt-4">
+          <motion.div
+            className="flex gap-8 whitespace-nowrap"
+            animate={{ x: ["-50%", "0%"] }}
+            transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
+          >
+            {duplicated.map((tech, idx) => (
+              <div key={idx} className="glass-card px-8 py-4 rounded-full border border-white/10 inline-block">
+                <span className="text-white font-medium text-lg">{tech}</span>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </div>
     </section>
@@ -416,7 +450,7 @@ const ProjectsSection = () => {
     <section className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-6xl font-black tracking-tight">Featured <span className="text-cyan-400">Projects</span></h2>
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading">Featured Projects</h2>
           <p className="text-gray-400 text-lg mt-4">Interactive previews · Live demos</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -432,9 +466,7 @@ const ProjectsSection = () => {
               <div className="text-6xl mb-5">{p.icon}</div>
               <h3 className="text-2xl font-bold mb-2">{p.title}</h3>
               <p className="text-gray-400 mb-4">{p.desc}</p>
-              <div className="flex flex-wrap gap-2 mb-5">
-                {p.tech.map((t, i) => <span key={i} className="text-xs bg-white/5 px-3 py-1 rounded-full border border-white/10">{t}</span>)}
-              </div>
+              <div className="flex flex-wrap gap-2 mb-5">{p.tech.map((t, i) => <span key={i} className="text-xs bg-white/5 px-3 py-1 rounded-full border border-white/10">{t}</span>)}</div>
               <button className="text-cyan-400 text-sm flex items-center gap-1 group transition-all duration-300 hover:gap-2">Live Preview →</button>
             </motion.div>
           ))}
@@ -444,9 +476,9 @@ const ProjectsSection = () => {
   );
 };
 
-// ========== TERMINAL SECTION (escaped quotes) ==========
+// ========== TERMINAL SECTION ==========
 const TerminalSection = () => {
-  const [logs] = useState([
+  const logs = [
     "$ npm run dev",
     "✓ Next.js ready",
     "✓ PostgreSQL connected",
@@ -468,7 +500,7 @@ const TerminalSection = () => {
     "> Admin access granted",
     "> Port 4444 opened for reverse shell",
     "> System ready for commands...",
-  ]);
+  ];
   const [visibleLogs, setVisibleLogs] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
   useEffect(() => {
@@ -490,11 +522,7 @@ const TerminalSection = () => {
     <section className="py-32 px-6">
       <div className="max-w-5xl mx-auto">
         <div className="rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl p-6 shadow-2xl">
-          <div className="flex gap-2 mb-6">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-          </div>
+          <div className="flex gap-2 mb-6"><div className="w-3 h-3 rounded-full bg-red-500" /><div className="w-3 h-3 rounded-full bg-yellow-500" /><div className="w-3 h-3 rounded-full bg-green-500" /></div>
           <pre className="text-green-400 text-sm overflow-hidden font-mono">
             {visibleLogs.map((log, idx) => <div key={idx} className="leading-7">{log}</div>)}
             {visibleLogs.length < logs.length && <span className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1" />}
@@ -505,7 +533,7 @@ const TerminalSection = () => {
   );
 };
 
-// ========== TESTIMONIALS SECTION (escaped double quotes) ==========
+// ========== TESTIMONIALS SECTION ==========
 const TestimonialsSection = () => {
   const reviews = [
     { name: "A3rian", text: "Silent aim is crazy good. Vehicle spawner saves so much time.", rating: 5, game: "FiveM" },
@@ -518,28 +546,16 @@ const TestimonialsSection = () => {
   return (
     <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950 overflow-hidden">
       <div className="text-center mb-20">
-        <h2 className="text-5xl md:text-6xl font-black tracking-tight">Customer <span className="text-cyan-400">Reviews</span></h2>
-        <div className="flex justify-center gap-2 mt-6">
-          <span className="text-yellow-400 text-3xl">★★★★★</span>
-          <span className="text-white text-lg ml-3">4.9/5 based on 100+ reviews</span>
-        </div>
+        <h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading">Customer Reviews</h2>
+        <div className="flex justify-center gap-2 mt-6"><span className="text-yellow-400 text-3xl">★★★★★</span><span className="text-white text-lg ml-3">4.9/5 based on 100+ reviews</span></div>
       </div>
       <div className="relative overflow-hidden">
-        <motion.div
-          className="flex gap-6"
-          animate={{ x: ["0%", "-50%"] }}
-          transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
-        >
+        <motion.div className="flex gap-6" animate={{ x: ["0%", "-50%"] }} transition={{ repeat: Infinity, duration: 30, ease: "linear" }}>
           {duplicated.map((review, idx) => (
-            <div key={idx} className="w-96 flex-shrink-0 glass-card p-6 rounded-2xl">
-              <div className="flex text-yellow-400 text-xl mb-3">
-                {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
-              </div>
+            <div key={idx} className="w-96 flex-shrink-0 glass-card p-6 rounded-2xl hover:border-cyan-400 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex text-yellow-400 text-xl mb-3">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
               <p className="text-gray-300 text-sm mb-4">&quot;{review.text}&quot;</p>
-              <div className="flex justify-between items-center">
-                <p className="text-white font-semibold">{review.name}</p>
-                <span className="text-cyan-400 text-xs border border-cyan-400/30 rounded-full px-3 py-1">{review.game}</span>
-              </div>
+              <div className="flex justify-between items-center"><p className="text-white font-semibold">{review.name}</p><span className="text-cyan-400 text-xs border border-cyan-400/30 rounded-full px-3 py-1">{review.game}</span></div>
             </div>
           ))}
         </motion.div>
@@ -548,38 +564,42 @@ const TestimonialsSection = () => {
   );
 };
 
+// ========== TERMS & POLICIES ==========
+const TermsSection = () => (
+  <section className="py-32 px-6 bg-gradient-to-b from-black to-gray-950">
+    <div className="max-w-5xl mx-auto">
+      <div className="text-center mb-16"><h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading">Terms & Policies</h2><p className="text-gray-400 text-lg mt-4">Everything you need to know about using Ambani.</p><div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-gray-400"><span className="bg-white/5 px-4 py-2 rounded-full">2026-02-06</span><span className="bg-white/5 px-4 py-2 rounded-full">Guaranteed Protection</span><span className="bg-white/5 px-4 py-2 rounded-full">200+ Users</span><span className="bg-white/5 px-4 py-2 rounded-full">Terms of Service</span><span className="bg-white/5 px-4 py-2 rounded-full">Refund Policy</span><span className="bg-white/5 px-4 py-2 rounded-full">Privacy Policy</span></div></div>
+      <div className="space-y-12">
+        <div className="glass-card p-8 rounded-2xl"><h3 className="text-2xl font-bold mb-4">Terms of Service</h3><p className="text-gray-400">Agreement to Terms – Welcome to Ambani...</p></div>
+        <div className="glass-card p-8 rounded-2xl"><h3 className="text-2xl font-bold mb-4">What You Can (and Can't) Do</h3><div className="grid md:grid-cols-2 gap-6"><div><p className="text-cyan-400 font-semibold">You Can</p><ul className="list-disc list-inside text-gray-400"><li>Use the software for personal use</li><li>Access updates during your license</li><li>Contact support for assistance</li><li>Use on your own machine</li></ul></div><div><p className="text-red-400 font-semibold">You Can't</p><ul className="list-disc list-inside text-gray-400"><li>Reverse engineer or decompile</li><li>Resell or transfer your license</li><li>Use for commercial purposes</li><li>Share with anti-cheat developers</li></ul></div></div><p className="text-gray-500 text-sm mt-4">Ambani is not liable for in-game bans or suspensions.</p></div>
+        <div className="glass-card p-8 rounded-2xl"><h3 className="text-2xl font-bold mb-4">Refund Policy</h3><p className="text-gray-400">All purchases are final and non-refundable. Chargebacks result in permanent ban.</p></div>
+        <div className="glass-card p-8 rounded-2xl"><h3 className="text-2xl font-bold mb-4">Privacy Policy</h3><p className="text-gray-400">We collect only necessary data (account, payment via Stripe, technical data). We never sell your data.</p></div>
+      </div>
+    </div>
+  </section>
+);
+
 // ========== CONTACT SECTION ==========
 const ContactSection = () => (
   <section id="contact" className="py-32 px-6">
     <div className="max-w-4xl mx-auto text-center">
-      <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-6">Contact <span className="text-cyan-400">Us</span></h2>
+      <h2 className="text-5xl md:text-6xl font-black tracking-tight fire-heading mb-6">Contact Us</h2>
       <p className="text-gray-400 text-lg mb-12">Have questions? Reach out to us!</p>
       <div className="glass-card p-10 rounded-3xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <input type="text" placeholder="Your Name" className="px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400" />
-          <input type="email" placeholder="Your Email" className="px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400" />
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><input type="text" placeholder="Your Name" className="px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400" /><input type="email" placeholder="Your Email" className="px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400" /></div>
         <textarea rows={5} placeholder="Your Message" className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-cyan-400 mb-8" />
-        <button className="bg-gradient-to-r from-cyan-600 to-blue-600 px-10 py-4 rounded-full text-lg font-semibold shadow-2xl shadow-cyan-500/20 transition-all duration-500 hover:scale-105 hover:shadow-cyan-500/40">
-          Send Message
-        </button>
+        <button className="bg-gradient-to-r from-cyan-600 to-blue-600 px-10 py-4 rounded-full text-lg font-semibold shadow-2xl shadow-cyan-500/20 transition-all duration-500 hover:scale-105 hover:shadow-cyan-500/40">Send Message</button>
         <div className="mt-10 pt-6 border-t border-white/10 flex flex-wrap justify-center gap-8 text-sm">
-          <a href="https://t.me/Shuwangcoder" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2">
-            <span className="text-2xl">📱</span> Telegram: @shuwangcoder
-          </a>
-          <a href="https://www.facebook.com/share/1CBcPKM1nd/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2">
-            <span className="text-2xl">📘</span> Facebook: Shuwang
-          </a>
-          <a href="https://discord.gg/ppRPW6yF" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2">
-            <span className="text-2xl">🎮</span> Discord: MYSEFT
-          </a>
+          <a href="https://t.me/Shuwangcoder" target="_blank" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2"><span className="text-2xl">📱</span> Telegram: @shuwangcoder</a>
+          <a href="https://www.facebook.com/share/1CBcPKM1nd/?mibextid=wwXIfr" target="_blank" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2"><span className="text-2xl">📘</span> Facebook: Shuwang</a>
+          <a href="https://discord.gg/ppRPW6yF" target="_blank" className="text-gray-400 hover:text-cyan-400 transition flex items-center gap-2"><span className="text-2xl">🎮</span> Discord: MYSEFT</a>
         </div>
       </div>
     </div>
   </section>
 );
 
-// ========== STORE PAGE ==========
+// ========== STORE PAGE COMPONENTS ==========
 const productsImages = [
   "500+.jpg", "anticheat.jpg", "ark.jpg", "forza5.jpg", "godofwar.jpg", "gtav.jpg", "horizon.jpg", "naruto.jpg", "pesfodball.jpg", "Sekiro.jpg", "spider.jpg", "theforest.jpg", "witcher.jpg"
 ];
@@ -606,9 +626,7 @@ const HeroCarousel = () => {
         />
       </AnimatePresence>
       <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-        {productsImages.map((_, idx) => (
-          <button key={idx} onClick={() => setCurrent(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === current ? "bg-cyan-400 w-6" : "bg-white/50"}`} />
-        ))}
+        {productsImages.map((_, idx) => <button key={idx} onClick={() => setCurrent(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === current ? "bg-cyan-400 w-6" : "bg-white/50"}`} />)}
       </div>
     </div>
   );
@@ -617,19 +635,14 @@ const InfiniteSlider = ({ direction = "left", speed = 20 }) => {
   const duplicated = [...productsImages, ...productsImages];
   return (
     <div className="relative overflow-hidden py-4">
-      <motion.div
-        className="flex gap-4"
-        animate={{ x: direction === "left" ? ["0%", "-50%"] : ["-50%", "0%"] }}
-        transition={{ repeat: Infinity, duration: speed, ease: "linear" }}
-      >
-        {duplicated.map((img, idx) => (
-          <img key={idx} src={`/images/products/${img}`} className="w-48 h-32 object-cover rounded-xl" alt="product" />
-        ))}
+      <motion.div className="flex gap-4" animate={{ x: direction === "left" ? ["0%", "-50%"] : ["-50%", "0%"] }} transition={{ repeat: Infinity, duration: speed, ease: "linear" }}>
+        {duplicated.map((img, idx) => <img key={idx} src={`/images/products/${img}`} className="w-48 h-32 object-cover rounded-xl" alt="product" />)}
       </motion.div>
     </div>
   );
 };
 
+// Full product list (21 items)
 const storeProducts = [
   { id: 1, title: "Steam Account - GTA V", category: "Steam Account", price: 0.01, originalPrice: 59.99, description: "Grand Theft Auto V - Online & Offline. FiveM Ready.", type: "account", gamesCount: 2, level: 25, image: "/images/products/gtav.jpg", discount: 97 },
   { id: 2, title: "Steam Account - FIFA 25", category: "Steam Account", price: 0.02, originalPrice: 69.99, description: "FIFA 25 Ultimate Team, Career Mode, Online Access", type: "account", gamesCount: 1, level: 18, image: "/images/products/fifa.jpg", discount: 97 },
@@ -683,6 +696,41 @@ const RotatingProductCard = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// ========== NEW: VERTICAL MARQUEE (SEAMLESS LOOP) ==========
+const VerticalMarquee = ({ children, direction = "up", speed = 30 }: { children: React.ReactNode; direction?: "up" | "down"; speed?: number }) => {
+  const [singleHeight, setSingleHeight] = useState(0);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (measureRef.current) {
+      setSingleHeight(measureRef.current.clientHeight);
+    }
+  }, [children]);
+
+  // If height is not yet measured, show static content (hidden overflow to avoid flicker)
+  return (
+    <div ref={containerRef} className="relative overflow-hidden h-[600px]">
+      {singleHeight > 0 ? (
+        <motion.div
+          className="flex flex-col gap-6"
+          animate={{ y: direction === "up" ? [0, -singleHeight] : [-singleHeight, 0] }}
+          transition={{ repeat: Infinity, duration: speed, ease: "linear" }}
+        >
+          <div ref={measureRef}>{children}</div>
+          {children}
+        </motion.div>
+      ) : (
+        // Static measurement phase (invisible, but we still need to measure height)
+        <div className="absolute opacity-0 pointer-events-none">
+          <div ref={measureRef} className="flex flex-col gap-6">{children}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ========== UPDATED STORE PAGE ==========
 const StorePage = () => {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -692,8 +740,45 @@ const StorePage = () => {
     return matchFilter && matchSearch;
   });
 
+  const leftProducts = filtered.filter((_, idx) => idx % 2 === 0);
+  const rightProducts = filtered.filter((_, idx) => idx % 2 === 1);
+
+  const renderProduct = (p: any) => {
+    const discountPercent = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
+    return (
+      <RotatingProductCard key={p.id}>
+        <div className="glass-card rounded-2xl overflow-hidden group cursor-pointer hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
+          <div className="relative h-48">
+            <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+            <span className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">-{discountPercent}%</span>
+            <span className="absolute top-3 left-3 bg-cyan-400/80 text-white text-xs px-2 py-1 rounded-full">{p.category}</span>
+          </div>
+          <div className="p-5 flex-1 flex flex-col">
+            <h3 className="text-xl font-bold mb-1">{p.title}</h3>
+            <p className="text-gray-400 text-sm mb-3">{p.description.substring(0, 80)}...</p>
+            {p.type === "account" && (
+              <div className="flex flex-wrap gap-2 mb-3 text-xs">
+                <span className="bg-white/10 px-2 py-1 rounded-full">🎮 {p.gamesCount} Games</span>
+                <span className="bg-white/10 px-2 py-1 rounded-full">Level {p.level}</span>
+              </div>
+            )}
+            {p.type === "zip" && <div className="mb-3 text-xs text-gray-400">📦 Size: {p.fileSize}</div>}
+            <div className="flex justify-between items-center mt-auto pt-4 border-t border-white/10">
+              <div>
+                <span className="text-2xl font-bold text-cyan-400">${p.price}</span>
+                <span className="text-gray-500 line-through text-sm ml-2">${p.originalPrice}</span>
+              </div>
+              <button onClick={() => window.open("https://t.me/Shuwangcoder", "_blank")} className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-full text-sm">Buy Now 🛒</button>
+            </div>
+          </div>
+        </div>
+      </RotatingProductCard>
+    );
+  };
+
   return (
     <main className="relative z-0 bg-primary min-h-screen pt-32">
+      <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover -z-10 opacity-40" src="/video/vdoback.mp4" />
       <div className="max-w-7xl mx-auto px-6">
         <HeroCarousel />
         <InfiniteSlider direction="left" speed={25} />
@@ -708,40 +793,23 @@ const StorePage = () => {
               <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400" />
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filtered.map(p => {
-              const discountPercent = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
-              return (
-                <RotatingProductCard key={p.id}>
-                  <div className="glass-card rounded-2xl overflow-hidden group cursor-pointer hover:-translate-y-2 transition-all duration-300 h-full flex flex-col">
-                    <div className="relative h-48">
-                      <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
-                      <span className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded-full">-{discountPercent}%</span>
-                      <span className="absolute top-3 left-3 bg-cyan-400/80 text-white text-xs px-2 py-1 rounded-full">{p.category}</span>
-                    </div>
-                    <div className="p-5 flex-1 flex flex-col">
-                      <h3 className="text-xl font-bold mb-1">{p.title}</h3>
-                      <p className="text-gray-400 text-sm mb-3">{p.description.substring(0, 80)}...</p>
-                      {p.type === "account" && (
-                        <div className="flex flex-wrap gap-2 mb-3 text-xs">
-                          <span className="bg-white/10 px-2 py-1 rounded-full">🎮 {p.gamesCount} Games</span>
-                          <span className="bg-white/10 px-2 py-1 rounded-full">Level {p.level}</span>
-                        </div>
-                      )}
-                      {p.type === "zip" && <div className="mb-3 text-xs text-gray-400">📦 Size: {p.fileSize}</div>}
-                      <div className="flex justify-between items-center mt-auto pt-4 border-t border-white/10">
-                        <div>
-                          <span className="text-2xl font-bold text-cyan-400">${p.price}</span>
-                          <span className="text-gray-500 line-through text-sm ml-2">${p.originalPrice}</span>
-                        </div>
-                        <button onClick={() => window.open("https://t.me/Shuwangcoder", "_blank")} className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-full text-sm">Buy Now 🛒</button>
-                      </div>
-                    </div>
-                  </div>
-                </RotatingProductCard>
-              );
-            })}
+
+          {/* Two-column vertical marquee */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <VerticalMarquee direction="up" speed={80}>
+              {leftProducts.map(p => renderProduct(p))}
+            </VerticalMarquee>
+            <VerticalMarquee direction="down" speed={80}>
+              {rightProducts.map(p => renderProduct(p))}
+            </VerticalMarquee>
           </div>
+
+          {/* Spacer to allow page scrolling */}
+          <div className="h-96"></div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-20 text-gray-500">No products found.</div>
+          )}
         </div>
       </div>
     </main>
@@ -754,7 +822,6 @@ const CombinedAboutPage = () => {
     <>
       <AboutSection />
       <ExperienceSection />
-      <TechStack />
       <TermsSection />
     </>
   );
@@ -763,15 +830,16 @@ const CombinedAboutPage = () => {
 const CombinedWorkPage = () => {
   return (
     <>
+      <TechStackMarquee />
       <TestimonialsSection />
       <TerminalSection />
     </>
   );
 };
 
-// ========== ANIMATED COMPONENTS (for home page) ==========
+// ========== ANIMATED SECTIONS (for home page) ==========
 const AnimatedAbout = withScrollAnimation(AboutSection);
-const AnimatedTechStack = withScrollAnimation(TechStack);
+const AnimatedTechStack = withScrollAnimation(TechStackMarquee);
 const AnimatedExperience = withScrollAnimation(ExperienceSection);
 const AnimatedProjects = withScrollAnimation(ProjectsSection);
 const AnimatedTerminal = withScrollAnimation(TerminalSection);
@@ -779,48 +847,111 @@ const AnimatedTestimonials = withScrollAnimation(TestimonialsSection);
 const AnimatedContact = withScrollAnimation(ContactSection);
 const AnimatedTerms = withScrollAnimation(TermsSection);
 
-// ========== BACKGROUND EFFECTS ==========
-const GlowOrbs = () => (
-  <>
-    <div className="fixed top-[-20%] left-[10%] w-[800px] h-[800px] bg-cyan-500/30 blur-[200px] rounded-full pointer-events-none z-0" />
-    <div className="fixed bottom-[-20%] right-[10%] w-[800px] h-[800px] bg-purple-500/30 blur-[200px] rounded-full pointer-events-none z-0" />
-    <div className="fixed top-1/3 left-1/2 w-[600px] h-[600px] bg-red-500/15 blur-[150px] rounded-full pointer-events-none z-0" />
-  </>
-);
-const ScrollProgress = () => {
-  const { scrollYProgress } = useScroll();
-  return <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />;
+const FullHomePage = () => {
+  return (
+    <>
+      <HeroSectionFull />
+      <AnimatedAbout />
+      <AnimatedTechStack />
+      <AnimatedExperience />
+      <AnimatedProjects />
+      <AnimatedTerminal />
+      <AnimatedTestimonials />
+      <AnimatedTerms />
+      <AnimatedContact />
+    </>
+  );
 };
 
+// ========== BACKGROUND EFFECTS ==========
+const GlowOrbs = () => (<><div className="fixed top-[-20%] left-[10%] w-[800px] h-[800px] bg-cyan-500/30 blur-[200px] rounded-full pointer-events-none z-0" /><div className="fixed bottom-[-20%] right-[10%] w-[800px] h-[800px] bg-purple-500/30 blur-[200px] rounded-full pointer-events-none z-0" /><div className="fixed top-1/3 left-1/2 w-[600px] h-[600px] bg-red-500/15 blur-[150px] rounded-full pointer-events-none z-0" /></>);
+const ScrollProgress = () => { const { scrollYProgress } = useScroll(); return <motion.div className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 origin-left z-50" style={{ scaleX: scrollYProgress }} />; };
 const ParticleBackground = () => {
-  const particlesInit = async (engine: any) => {
-    await loadSlim(engine);
-  };
-  return (
-    <Particles
-      id="tsparticles"
-      init={particlesInit}
-      className="fixed inset-0 -z-10"
-      options={{
-        fpsLimit: 60,
-        particles: {
-          number: { value: 80, density: { enable: true, area: 1000 } },
-          color: { value: ["#00BFFF", "#FF69B4", "#ff0000"] },
-          links: { color: "#ffffff", opacity: 0.05, distance: 200 },
-          move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false },
-          opacity: { value: 0.4 },
-          size: { value: 2 },
-        },
-        interactivity: { events: { onHover: { enable: true, mode: "repulse" } } },
-      }}
-    />
-  );
+  const particlesInit = async (engine: any) => { await loadSlim(engine); };
+  return <Particles id="tsparticles" init={particlesInit} className="fixed inset-0 -z-10" options={{ fpsLimit: 60, particles: { number: { value: 80, density: { enable: true, width: 1920, height: 1080 } }, color: { value: ["#00BFFF","#FF69B4","#ff0000"] }, links: { color: "#ffffff", opacity: 0.05, distance: 200 }, move: { enable: true, speed: 1.2, direction: "none", random: false, straight: false }, opacity: { value: 0.4 }, size: { value: 2 } }, interactivity: { events: { onHover: { enable: true, mode: "repulse" } } } }} />;
 };
 
 // ========== MAIN HOME PAGE ==========
 export default function HomePage() {
-  const [activePage, setActivePage] = useState<"home" | "about" | "store" | "work" | "contact">("home");
+  const [activePage, setActivePage] = useState<"landing" | "home" | "about" | "store" | "work" | "contact">("landing");
 
+  if (activePage === "landing") {
+    return (
+      <SmoothScrollProvider>
+        <div className="bg-layered noise relative">
+          <CodeBackground />
+          <GlowOrbs />
+          <ScrollProgress />
+          <ParticleBackground />
+          <CommandMenu />
+          <HeroSectionLanding onStart={() => setActivePage("home")} />
+        </div>
+      </SmoothScrollProvider>
+    );
+  }
+
+  if (activePage === "about") {
+    return (
+      <SmoothScrollProvider>
+        <div className="bg-layered noise relative">
+          <CodeBackground />
+          <GlowOrbs />
+          <ScrollProgress />
+          <ParticleBackground />
+          <CommandMenu />
+          <MorphingNavbar setActivePage={(p) => setActivePage(p as any)} activePage={activePage} />
+          <CombinedAboutPage />
+          <footer className="py-12 text-center text-gray-500 text-sm border-t border-white/5">© 2025 LMTSTORE · Built with Next.js & Framer Motion · <kbd className="px-2 py-1 bg-white/5 rounded-md">⌘</kbd>+<kbd className="px-2 py-1 bg-white/5 rounded-md">K</kbd> to search</footer>
+        </div>
+      </SmoothScrollProvider>
+    );
+  }
+
+  if (activePage === "work") {
+    return (
+      <SmoothScrollProvider>
+        <div className="bg-layered noise relative">
+          <CodeBackground />
+          <GlowOrbs />
+          <ScrollProgress />
+          <ParticleBackground />
+          <CommandMenu />
+          <MorphingNavbar setActivePage={(p) => setActivePage(p as any)} activePage={activePage} />
+          <CombinedWorkPage />
+          <footer className="py-12 text-center text-gray-500 text-sm border-t border-white/5">© 2025 LMTSTORE · Built with Next.js & Framer Motion · <kbd className="px-2 py-1 bg-white/5 rounded-md">⌘</kbd>+<kbd className="px-2 py-1 bg-white/5 rounded-md">K</kbd> to search</footer>
+        </div>
+      </SmoothScrollProvider>
+    );
+  }
+
+  if (activePage === "store") {
+    return (
+      <SmoothScrollProvider>
+        <CommandMenu />
+        <MorphingNavbar setActivePage={(p) => setActivePage(p as any)} activePage={activePage} />
+        <StorePage />
+      </SmoothScrollProvider>
+    );
+  }
+
+  if (activePage === "contact") {
+    return (
+      <SmoothScrollProvider>
+        <div className="bg-layered noise relative">
+          <CodeBackground />
+          <GlowOrbs />
+          <ScrollProgress />
+          <ParticleBackground />
+          <CommandMenu />
+          <MorphingNavbar setActivePage={(p) => setActivePage(p as any)} activePage={activePage} />
+          <ContactSection />
+          <footer className="py-12 text-center text-gray-500 text-sm border-t border-white/5">© 2025 LMTSTORE · Built with Next.js & Framer Motion · <kbd className="px-2 py-1 bg-white/5 rounded-md">⌘</kbd>+<kbd className="px-2 py-1 bg-white/5 rounded-md">K</kbd> to search</footer>
+        </div>
+      </SmoothScrollProvider>
+    );
+  }
+
+  // Default home page (activePage === "home")
   return (
     <SmoothScrollProvider>
       <div className="bg-layered noise relative">
@@ -829,31 +960,9 @@ export default function HomePage() {
         <ScrollProgress />
         <ParticleBackground />
         <CommandMenu />
-        <MorphingNavbar setActivePage={setActivePage} activePage={activePage} />
-
-        <main className="relative z-10">
-          {activePage === "home" && (
-            <>
-              <HeroSection />
-              <AnimatedAbout />
-              <AnimatedTechStack />
-              <AnimatedExperience />
-              <AnimatedProjects />
-              <AnimatedTerminal />
-              <AnimatedTestimonials />
-              <AnimatedTerms />
-              <AnimatedContact />
-            </>
-          )}
-          {activePage === "about" && <CombinedAboutPage />}
-          {activePage === "store" && <StorePage />}
-          {activePage === "work" && <CombinedWorkPage />}
-          {activePage === "contact" && <ContactSection />}
-        </main>
-
-        <footer className="py-12 text-center text-gray-500 text-sm border-t border-white/5">
-          © 2025 LMTSTORE · Built with Next.js & Framer Motion · <kbd className="px-2 py-1 bg-white/5 rounded-md">⌘</kbd>+<kbd className="px-2 py-1 bg-white/5 rounded-md">K</kbd> to search
-        </footer>
+        <MorphingNavbar setActivePage={(p) => setActivePage(p as any)} activePage={activePage} />
+        <FullHomePage />
+        <footer className="py-12 text-center text-gray-500 text-sm border-t border-white/5">© 2025 LMTSTORE · Built with Next.js & Framer Motion · <kbd className="px-2 py-1 bg-white/5 rounded-md">⌘</kbd>+<kbd className="px-2 py-1 bg-white/5 rounded-md">K</kbd> to search</footer>
       </div>
     </SmoothScrollProvider>
   );
